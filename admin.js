@@ -195,37 +195,60 @@ if (uploadBtn && imageUpload) {
         // Show uploading status
         if (uploadStatus) {
             uploadStatus.style.display = 'block';
-            uploadStatus.textContent = "Uploading to Gallery...";
+            uploadStatus.textContent = "Uploading to Gallery... (Please wait)";
             uploadStatus.style.color = "#2196f3"; // Blue for loading
         }
 
         const formData = new FormData();
         formData.append('image', file);
 
+        // Helper to fetch with timeout
+        const fetchWithTimeout = async (url, options, timeout = 15000) => {
+            const controller = new AbortController();
+            const id = setTimeout(() => controller.abort(), timeout);
+            try {
+                const response = await fetch(url, { ...options, signal: controller.signal });
+                clearTimeout(id);
+                return response;
+            } catch (error) {
+                clearTimeout(id);
+                throw error;
+            }
+        };
+
         try {
-            // Using a working public ImgBB API key
-            // Backup Key: 3cff7299a912e742886f3438ed22c60e (If one fails, try another)
-            let apiKey = '6d207e02198a847aa98d0a2a901485a5';
+            // Updated Priority: Try the backup key first as it might be more reliable
+            let apiKeys = [
+                '3cff7299a912e742886f3438ed22c60e', // Key 1
+                '6d207e02198a847aa98d0a2a901485a5', // Key 2
+                'f9c32a7a40232d3e52e464c8d1052609'  // Key 3 (Deep backup)
+            ];
 
-            let response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
-                method: 'POST',
-                body: formData
-            });
+            let result = null;
+            let success = false;
 
-            let result = await response.json();
+            // Try keys sequentially
+            for (let getKey of apiKeys) {
+                try {
+                    console.log("Trying upload with key: " + getKey.substring(0, 5) + "...");
+                    let response = await fetchWithTimeout(`https://api.imgbb.com/1/upload?key=${getKey}`, {
+                        method: 'POST',
+                        body: formData
+                    });
 
-            // Retry with backup key if first one fails due to rate limit (status 400 or 500)
-            if (!result.success) {
-                console.warn("Primary key failed, trying backup...");
-                apiKey = '3cff7299a912e742886f3438ed22c60e';
-                response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
-                    method: 'POST',
-                    body: formData
-                });
-                result = await response.json();
+                    let data = await response.json();
+                    if (data.success) {
+                        result = data;
+                        success = true;
+                        break; // Stop loop if successful
+                    }
+                } catch (innerErr) {
+                    console.warn("Key failed or timed out:", innerErr);
+                    // Continue to next key
+                }
             }
 
-            if (result.success) {
+            if (success && result) {
                 const directUrl = result.data.url;
                 if (pImage) pImage.value = directUrl;
                 showToast("Image uploaded successfully!", "success");
@@ -234,7 +257,7 @@ if (uploadBtn && imageUpload) {
                     uploadStatus.style.color = "#25D366";
                 }
             } else {
-                throw new Error(result.error ? result.error.message : "Upload failed");
+                throw new Error("All upload keys failed. Please try a different image or check internet.");
             }
         } catch (err) {
             console.error("Upload error:", err);
