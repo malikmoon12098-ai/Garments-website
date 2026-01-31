@@ -28,7 +28,7 @@ function getAvatarColor(name) {
     return '#' + "00000".substring(0, 6 - c.length) + c;
 }
 
-const GEMINI_API_KEY = "AIzaSyAGwugrSNJrvClZ9f9LPabxLD7xyOB-DtE"; // Gemini AI Key
+const GEMINI_API_KEY = "AIzaSyD_MBj7nbv0T45pZEGd1noCIPlwcMRS50I"; // Gemini AI Key
 
 // Function Update: loadUserProfile
 function loadUserProfile() {
@@ -1528,4 +1528,3 @@ function deleteMessage(msgId, chatId) {
 
 // Start the application
 init();
-
