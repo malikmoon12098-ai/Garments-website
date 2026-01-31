@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KHADER | Product Details</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        .product-details-page {
+            padding-top: 140px;
+            min-height: 100vh;
+            background: #fdfdfd;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 60px;
+            align-items: start;
+        }
+
+        .main-image {
+            width: 100%;
+            height: auto;
+            border-radius: 4px;
+            background: #f5f5f5;
+        }
+
+        .product-meta {
+            position: sticky;
+            top: 140px;
+        }
+
+        .p-category {
+            color: var(--accent);
+            text-transform: uppercase;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .p-title {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            line-height: 1.1;
+        }
+
+        .p-price {
+            font-size: 1.8rem;
+            font-weight: 400;
+            margin-bottom: 2rem;
+            display: block;
+            color: var(--primary);
+        }
+
+        .p-desc {
+            margin-bottom: 2.5rem;
+            color: #555;
+            line-height: 1.7;
+            font-size: 1.05rem;
+        }
+
+        .action-btns {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .btn-whatsapp {
+            background: #121212;
+            color: white;
+            border: none;
+            width: 100%;
+            text-align: center;
+        }
+
+        .btn-whatsapp:hover {
+            background: #333;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .details-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .p-title {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <a href="shop.html" class="back-btn" title="Back to Shop">←</a>
+
+    <header id="header" class="scrolled">
+        <nav class="container">
+            <div class="logo">
+                <a href="index.html">
+                    <img src="images/logo.png" alt="KHADER" class="brand-logo">
+                </a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="shop.html">Shop</a></li>
+                <li><a href="cart.html">Cart</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+            <button class="mobile-menu-btn">
+                <span></span>
+                <span></span>
+            </button>
+        </nav>
+    </header>
+
+    <main class="product-details-page container">
+        <div id="loading" style="text-align: center; padding: 100px;">
+            <p>Loading product details...</p>
+        </div>
+
+        <div id="productContent" class="details-grid" style="display: none;">
+            <div class="image-section">
+                <img id="displayImage" src="" alt="Product Image" class="main-image">
+            </div>
+            <div class="product-meta">
+                <span id="displayCategory" class="p-category">Category</span>
+                <h1 id="displayTitle" class="p-title">Product Name</h1>
+                <span id="displayPrice" class="p-price">Rs. 0</span>
+                <p id="displayDesc" class="p-desc">Description goes here...</p>
+
+                <div class="action-btns">
+                    <button id="addToCartBtn" class="btn btn-secondary"
+                        style="border-color: var(--primary); color: var(--primary);">Add to Cart</button>
+                    <button id="buyNowBtn" class="btn btn-whatsapp">Buy Now</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer style="margin-top: 5rem; padding: 40px 0; border-top: 1px solid #eee;">
+        <div class="container" style="text-align: center; opacity: 0.6; font-size: 0.8rem;">
+            <p>&copy; 2026 KHADER. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script type="module" src="product.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>

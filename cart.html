@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KHADER | Your Cart</title>
+    <title>My Cart | KHADER</title>
+    <meta property="og:title" content="My Shopping Cart - KHADER">
+    <link rel="icon" type="image/png" href="images/logo.png">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        .cart-page {
+            padding-top: 140px;
+            min-height: 100vh;
+            background: #fdfdfd;
+        }
+
+        .cart-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .cart-item {
+            display: flex;
+            gap: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            align-items: center;
+        }
+
+        .cart-item img {
+            width: 80px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .item-details {
+            flex: 1;
+        }
+
+        .item-details h4 {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .item-price {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .remove-btn {
+            background: #ff4d4d;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .cart-summary {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            text-align: right;
+        }
+
+        .total-row {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+        }
+
+        .btn-checkout {
+            background: #121212;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            display: inline-block;
+            text-transform: uppercase;
+        }
+
+        .btn-checkout:hover {
+            background: #333;
+        }
+
+        .empty-cart {
+            text-align: center;
+            padding: 50px 0;
+            opacity: 0.6;
+        }
+
+        @media (max-width: 768px) {
+            .cart-item {
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <a href="shop.html" class="back-btn" title="Back to Shop">←</a>
+
+    <header id="header" class="scrolled">
+        <nav class="container">
+            <div class="logo">
+                <a href="index.html">
+                    <img src="images/logo.png" alt="KHADER" class="brand-logo">
+                </a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="shop.html">Shop</a></li>
+                <li><a href="cart.html">Cart <span id="cartCountHeader">(0)</span></a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="cart-page container">
+        <div class="section-header">
+            <h2>Your Cart</h2>
+        </div>
+
+        <div class="cart-container">
+            <div id="cartList">
+                <!-- Items will be loaded here -->
+            </div>
+
+            <div id="cartSummary" class="cart-summary" style="display: none;">
+                <div class="total-row">
+                    Total: <span id="cartTotal">Rs. 0</span>
+                </div>
+                <button id="checkoutBtn" class="btn-checkout">Checkout Now</button>
+            </div>
+        </div>
+    </main>
+
+    <script type="module" src="cart.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>

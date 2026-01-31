@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KHADER | Contact Us</title>
+    <title>Contact | KHADER</title>
+    <!-- Open Graph -->
+    <meta property="og:title" content="Contact KHADER">
+    <meta property="og:description" content="Get in touch with us. Premium support for premium customers.">
+    <meta property="og:image" content="https://khader-store.netlify.app/images/logo.png">
+    <link rel="icon" type="image/png" href="images/logo.png">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        .contact-page {
+            padding-top: 140px;
+            min-height: 100vh;
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            margin-top: 3rem;
+        }
+
+        .contact-info-item {
+            margin-bottom: 2.5rem;
+        }
+
+        .contact-info-item h4 {
+            font-size: 0.8rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .contact-info-item p {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .social-links-contact {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .social-links-contact a {
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        @media (max-width: 768px) {
+            .contact-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <a href="index.html" class="back-btn" title="Back to Home">←</a>
+
+    <header id="header" class="scrolled">
+        <nav class="container">
+            <div class="logo">
+                <a href="index.html">
+                    <img src="images/logo.png" alt="KHADER" class="brand-logo">
+                </a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="shop.html">Shop</a></li>
+                <li><a href="cart.html">Cart</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+            <button class="mobile-menu-btn">
+                <span></span>
+                <span></span>
+            </button>
+        </nav>
+    </header>
+
+    <main class="contact-page container">
+        <div class="section-header" style="text-align: left;">
+            <span class="sub"
+                style="color: var(--accent); font-weight: 700; text-transform: uppercase; font-size: 0.8rem;">Get In
+                Touch</span>
+            <h2 style="font-size: 3rem; margin-top: 0.5rem;">Contact Khader</h2>
+        </div>
+
+        <div class="contact-grid">
+            <div class="contact-details">
+                <div class="contact-info-item">
+                    <h4>WhatsApp / Phone</h4>
+                    <p id="displayPhone">Loading...</p>
+                </div>
+                <div class="contact-info-item">
+                    <h4>Business Email</h4>
+                    <p id="displayEmail">Loading...</p>
+                </div>
+                <div class="contact-info-item">
+                    <h4>Headquarters</h4>
+                    <p id="displayAddress">Loading...</p>
+                </div>
+                <div class="contact-info-item">
+                    <h4>Follow Us</h4>
+                    <div class="social-links-contact">
+                        <a href="#" id="displayInsta" target="_blank" style="display: none;">Instagram</a>
+                        <a href="#" id="displayFB" target="_blank" style="display: none;">Facebook</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="contact-graphic"
+                style="background: #121212; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; padding: 3rem;">
+                <div style="text-align: center;">
+                    <h3 style="font-size: 2rem; margin-bottom: 1rem;">Experience Excellence</h3>
+                    <p style="opacity: 0.7;">Our support team is available mon-fri to assist you with any inquiries.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer style="margin-top: 5rem; padding: 40px 0; border-top: 1px solid #eee;">
+        <div class="container"
+            style="display: flex; justify-content: space-between; align-items: center; opacity: 0.6; font-size: 0.8rem;">
+            <p>&copy; 2026 KHADER. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script type="module" src="contact.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop | KHADER Signature</title>
+    <meta name="description" content="Browse our exclusive collection of hoodies, shirts, and modern essentials.">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Shop - KHADER Signature">
+    <meta property="og:description"
+        content="Browse our exclusive collection of hoodies, shirts, and modern essentials.">
+    <meta property="og:image" content="https://khader-store.netlify.app/images/logo.png">
+    <link rel="icon" type="image/png" href="images/logo.png">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <a href="index.html" class="back-btn" title="Back to Home">←</a>
+
+    <header id="header" class="scrolled">
+        <nav class="container">
+            <div class="logo">
+                <a href="index.html">
+                    <img src="images/logo.png" alt="KHADER" class="brand-logo">
+                </a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="shop.html">Shop</a></li>
+                <li><a href="cart.html">Cart</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+            <button class="mobile-menu-btn">
+                <span></span>
+                <span></span>
+            </button>
+        </nav>
+    </header>
+
+    <main class="shop-page container">
+        <div class="section-header">
+            <h2>The Signature Shop</h2>
+            <p>Refined essentials for the visionary man.</p>
+        </div>
+
+        <div class="search-container">
+            <div class="search-bar">
+                <input type="text" id="shopSearch" placeholder="Search by name or category...">
+            </div>
+        </div>
+
+        <div class="filter-tabs" id="categoryTabs">
+            <button class="filter-btn active" data-category="All">All</button>
+            <!-- Categories will be added here dynamically -->
+        </div>
+
+        <div id="shopGrid" class="product-grid">
+            <!-- Products will be loaded here -->
+            <p style="text-align: center; width: 100%;">Loading our collection...</p>
+        </div>
+
+        <div id="noResults" style="text-align: center; padding: 5rem 0; display: none;">
+            <h3 style="margin-bottom: 1rem;">No products found</h3>
+            <p>Try searching for something else or change the category.</p>
+        </div>
+    </main>
+
+    <footer id="contact" style="margin-top: 5rem;">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2026 KHADER. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module" src="shop.js"></script>
+</body>
+
+</html>
