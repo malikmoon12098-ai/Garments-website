@@ -1528,3 +1528,4 @@ function deleteMessage(msgId, chatId) {
 
 // Start the application
 init();
+
