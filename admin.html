@@ -97,7 +97,84 @@
             display: block;
         }
 
-        /* Mobile Optimization */
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background: #121212;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: toastSlideIn 0.3s ease forwards;
+            min-width: 250px;
+            border-left: 5px solid #4caf50;
+        }
+
+        .toast.error {
+            border-left-color: #ff4d4d;
+        }
+
+        .toast.info {
+            border-left-color: #2196f3;
+        }
+
+        @keyframes toastSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .toast.fade-out {
+            animation: toastFadeOut 0.3s ease forwards;
+        }
+
+        @keyframes toastFadeOut {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+
+            to {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+        }
+
+        @media (max-width: 900px) {
+            .toast-container {
+                top: auto;
+                bottom: 20px;
+                right: 10px;
+                left: 10px;
+            }
+
+            .toast {
+                min-width: auto;
+                font-size: 0.8rem;
+                padding: 10px 15px;
+            }
+        }
+
         @media (max-width: 768px) {
             .admin-panel {
                 padding-top: 100px;
@@ -246,60 +323,148 @@
         }
 
         @media (max-width: 900px) {
-            .admin-layout {
-                display: flex;
-                flex-direction: column;
-                padding-top: 60px;
+            :root {
+                --header-height: 50px;
+            }
+
+            html,
+            body {
+                width: 100%;
                 overflow-x: hidden;
+                font-size: 13px;
+                /* Smaller base font */
+            }
+
+            /* Force all containers to stay within bounds */
+            * {
+                box-sizing: border-box;
+                max-width: 100% !important;
+            }
+
+            .container {
+                padding: 0 10px !important;
+            }
+
+            .admin-layout {
+                display: flex !important;
+                flex-direction: column !important;
+                padding-top: var(--header-height) !important;
+                width: 100% !important;
+                overflow-x: hidden !important;
             }
 
             .admin-sidebar {
-                height: auto;
-                position: sticky;
-                top: 60px;
-                z-index: 900;
-                padding: 10px;
-                flex-direction: row;
-                overflow-x: auto;
-                gap: 8px;
-                white-space: nowrap;
-                background: #121212;
-                border-bottom: 1px solid #333;
-                width: 100%;
-                -webkit-overflow-scrolling: touch;
+                height: auto !important;
+                position: sticky !important;
+                top: var(--header-height) !important;
+                z-index: 1001 !important;
+                padding: 5px !important;
+                flex-direction: row !important;
+                overflow-x: auto !important;
+                gap: 5px !important;
+                white-space: nowrap !important;
+                background: #121212 !important;
+                border-bottom: 2px solid #333 !important;
+                width: 100% !important;
+                display: flex !important;
             }
 
             .admin-sidebar hr {
-                display: none;
+                display: none !important;
             }
 
             .sidebar-btn {
-                padding: 10px 15px;
-                font-size: 0.85rem;
-                flex-shrink: 0;
+                padding: 6px 10px !important;
+                font-size: 0.7rem !important;
+                border-radius: 4px !important;
+                flex-shrink: 0 !important;
             }
 
             .admin-content-area {
-                padding: 20px 15px;
-                width: 100%;
-                box-sizing: border-box;
-                overflow-x: hidden;
+                padding: 10px 5px !important;
+                width: 100% !important;
+                overflow-x: hidden !important;
             }
 
             .admin-card {
-                padding: 1.5rem;
-                margin-bottom: 1.5rem;
-                width: 100%;
+                padding: 0.8rem !important;
+                margin-bottom: 0.8rem !important;
+                width: 100% !important;
+                border-radius: 6px !important;
+                box-shadow: none !important;
+            }
+
+            .admin-card h2 {
+                font-size: 1rem !important;
+                margin-bottom: 0.8rem !important;
+            }
+
+            .admin-card p {
+                font-size: 0.75rem !important;
+                line-height: 1.3 !important;
             }
 
             .grid-two {
-                grid-template-columns: 1fr;
-                gap: 20px;
+                grid-template-columns: 1fr !important;
+                gap: 10px !important;
+            }
+
+            .form-group label {
+                font-size: 0.7rem !important;
+                margin-bottom: 2px !important;
+            }
+
+            input,
+            textarea,
+            select {
+                padding: 8px !important;
+                font-size: 0.8rem !important;
+                height: auto !important;
+            }
+
+            .btn {
+                padding: 10px !important;
+                font-size: 0.75rem !important;
+                width: 100% !important;
             }
 
             .product-list-admin {
-                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-                gap: 15px;
+                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)) !important;
+                gap: 8px !important;
+            }
+
+            .admin-item {
+                padding: 5px !important;
+            }
+
+            .admin-item img {
+                height: 100px !important;
+            }
+
+            .admin-item h4 {
+                font-size: 0.8rem !important;
+            }
+
+            .admin-item p {
+                font-size: 0.7rem !important;
+            }
+
+            /* Header Tweaks */
+            header.scrolled {
+                height: 50px !important;
+            }
+
+            .brand-logo {
+                height: 35px !important;
+            }
+
+            #activeSessionCount {
+                font-size: 0.65rem !important;
+            }
+
+            #logoutBtn {
+                padding: 3px 8px !important;
+                font-size: 0.65rem !important;
             }
         }
     </style>
@@ -318,6 +483,9 @@
             <p id="authError" style="color: #ff4d4d; margin-top: 1rem; display: none;">Incorrect PIN. Try again.</p>
         </div>
     </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toastContainer" class="toast-container"></div>
     <div id="adminMainContent">
         <header id="header" class="scrolled">
             <nav class="container">

@@ -136,16 +136,33 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// --- UTILS ---
+// --- TOAST NOTIFICATIONS ---
+const toastContainer = document.getElementById('toastContainer');
+
+function showToast(msg, type = 'success') {
+    if (!toastContainer) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+
+    // Choose icon based on type
+    let icon = '✔';
+    if (type === 'error') icon = '✖';
+    if (type === 'info') icon = 'ℹ';
+
+    toast.innerHTML = `<span>${icon}</span> <span>${msg}</span>`;
+    toastContainer.appendChild(toast);
+
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        toast.classList.add('fade-out');
+        setTimeout(() => toast.remove(), 300);
+    }, 5000);
+}
+
+// Keep showStatus for compatibility but route to Toast
 function showStatus(msg, type) {
-    if (!statusDiv) return;
-    statusDiv.textContent = msg;
-    statusDiv.className = `status-msg ${type}`;
-    if (type === 'success') {
-        setTimeout(() => {
-            statusDiv.className = 'status-msg';
-        }, 5000);
-    }
+    showToast(msg, type);
 }
 
 // --- CONTACT FORM ---
@@ -386,18 +403,19 @@ function attachOrderListeners() {
             try {
                 await updateDoc(doc(db, "orders", id), { status: 'completed' });
                 showStatus("Order marked as complete!", "success");
-            } catch (err) { alert(err.message); }
+            } catch (err) { showToast(err.message, "error"); }
         };
     });
 
     document.querySelectorAll('.delete-order-btn').forEach(btn => {
         btn.onclick = async (e) => {
             const id = e.target.dataset.id;
+            // Native confirm is still fine for destructive actions, but we use Toast for result
             if (confirm("Delete this order log permanently?")) {
                 try {
                     await deleteDoc(doc(db, "orders", id));
-                    showStatus("Order log deleted.", "success");
-                } catch (err) { alert(err.message); }
+                    showToast("Order log deleted.", "success");
+                } catch (err) { showToast(err.message, "error"); }
             }
         };
     });
