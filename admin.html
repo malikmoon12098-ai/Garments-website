@@ -557,16 +557,33 @@
                                     <input type="text" id="pCategory" list="categoryOptions" required
                                         placeholder="Select or Type">
                                     <datalist id="categoryOptions">
+                                        <option value="Kurta">
+                                        <option value="Shalwar Kameez">
+                                        <option value="Waistcoats">
                                         <option value="Jackets">
                                         <option value="Hoodies">
                                         <option value="T-Shirts">
+                                        <option value="Shirts">
+                                        <option value="Pants">
                                         <option value="Trousers">
+                                        <option value="Unstitched Fabric">
+                                        <option value="Accessories">
                                     </datalist>
                                 </div>
                                 <div class="form-group">
-                                    <label>Image Link (Direct URL)</label>
-                                    <input type="url" id="pImage" required
-                                        placeholder="https://i.ibb.co/direct-link.jpg">
+                                    <label>Product Image</label>
+                                    <div style="display: flex; gap: 8px;">
+                                        <input type="url" id="pImage" required style="flex: 1;"
+                                            placeholder="Direct URL or Upload →">
+                                        <button type="button" id="uploadBtn" class="btn btn-secondary"
+                                            style="width: auto; padding: 0 15px; background: #666; font-size: 0.8rem;">
+                                            Gallery
+                                        </button>
+                                    </div>
+                                    <input type="file" id="imageUpload" accept="image/*" style="display: none;">
+                                    <p id="uploadStatus"
+                                        style="font-size: 0.7rem; color: #25D366; margin-top: 4px; display: none;">
+                                        Uploading...</p>
                                 </div>
                             </div>
                             <div class="form-group">

@@ -52,9 +52,14 @@
             </div>
         </div>
 
-        <div class="filter-tabs" id="categoryTabs">
-            <button class="filter-btn active" data-category="All">All</button>
-            <!-- Categories will be added here dynamically -->
+        <div class="filter-dropdown-container">
+            <label for="categoryFilter"
+                style="font-weight: 800; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 10px; display: block;">Filter
+                by Category</label>
+            <select id="categoryFilter" class="category-select">
+                <option value="All">All Categories</option>
+                <!-- Dynamic categories will be added here -->
+            </select>
         </div>
 
         <div id="shopGrid" class="product-grid">

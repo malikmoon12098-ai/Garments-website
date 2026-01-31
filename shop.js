@@ -3,7 +3,6 @@ import { collection, getDocs, query } from "https://www.gstatic.com/firebasejs/1
 
 const shopGrid = document.getElementById('shopGrid');
 const searchInput = document.getElementById('shopSearch');
-const tabsContainer = document.getElementById('categoryTabs');
 const noResults = document.getElementById('noResults');
 
 let allProducts = [];
@@ -29,7 +28,7 @@ async function initShop() {
             return dateB - dateA;
         });
 
-        setupCategoryTabs();
+        setupCategoryDropdown();
         renderProducts();
 
     } catch (error) {
@@ -40,25 +39,23 @@ async function initShop() {
     }
 }
 
-// Generate Category Tabs dynamically
-function setupCategoryTabs() {
+const categoryFilter = document.getElementById('categoryFilter');
+
+// Generate Category Dropdown dynamically
+function setupCategoryDropdown() {
+    if (!categoryFilter) return;
+
     // Get unique categories from products
-    const categories = ['All', ...new Set(allProducts.map(p => p.category))];
+    const categories = [...new Set(allProducts.map(p => p.category))].sort();
 
-    tabsContainer.innerHTML = categories.map(cat => `
-        <button class="filter-btn ${cat === activeCategory ? 'active' : ''}" data-category="${cat}">
-            ${cat}
-        </button>
-    `).join('');
+    // Populate select options
+    categoryFilter.innerHTML = `<option value="All">All Categories</option>` +
+        categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
 
-    // Add click events to tabs
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            activeCategory = btn.getAttribute('data-category');
-            renderProducts();
-        });
+    // Add change event
+    categoryFilter.addEventListener('change', (e) => {
+        activeCategory = e.target.value;
+        renderProducts();
     });
 }
 

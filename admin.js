@@ -76,10 +76,11 @@ async function loadAccessLogs() {
     if (!accessLogList) return;
     try {
         const q = query(collection(db, "access_logs"), limit(10));
-        const unsubscribe = onSnapshot(q, (snapshot) => {
+        onSnapshot(q, (snapshot) => {
             accessLogList.innerHTML = '';
-            snapshot.forEach(doc => {
-                const data = doc.data();
+            snapshot.forEach(docSnap => {
+                const data = docSnap.data();
+                const id = docSnap.id;
                 const date = data.timestamp ? data.timestamp.toDate().toLocaleString() : 'Just now';
                 let device = "Unknown Device";
                 if (data.userAgent.includes("Mobile")) device = "Mobile";
@@ -87,10 +88,31 @@ async function loadAccessLogs() {
                 else if (data.userAgent.includes("Mac")) device = "Mac";
 
                 const div = document.createElement('div');
-                div.style.borderBottom = "1px solid #333";
-                div.style.padding = "5px 0";
-                div.innerHTML = `<span style="color: #25D366;">● Login</span> - ${date} <br> <span style="color: #888;">${device}</span>`;
+                div.style.borderBottom = "1px solid #eee";
+                div.style.padding = "10px 0";
+                div.style.display = "flex";
+                div.style.justifyContent = "space-between";
+                div.style.alignItems = "center";
+
+                div.innerHTML = `
+                    <div>
+                        <span style="color: #25D366; font-weight: bold;">● Login</span> - ${date} <br> 
+                        <span style="color: #888; font-size: 0.8rem;">${device}</span>
+                    </div>
+                    <button class="delete-log-btn" data-id="${id}" style="background: #ff4d4d; color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;" title="Delete Log">✖</button>
+                `;
                 accessLogList.appendChild(div);
+            });
+
+            // Attach Listeners
+            document.querySelectorAll('.delete-log-btn').forEach(btn => {
+                btn.onclick = async (e) => {
+                    const logId = e.target.closest('button').dataset.id;
+                    try {
+                        await deleteDoc(doc(db, "access_logs", logId));
+                        showToast("Log entry removed.", "info");
+                    } catch (err) { showToast(err.message, "error"); }
+                };
             });
         });
     } catch (e) {
@@ -209,13 +231,60 @@ async function loadContactInfo() {
     }
 }
 
+// --- IMAGE UPLOAD LOGIC ---
+const uploadBtn = document.getElementById('uploadBtn');
+const imageUpload = document.getElementById('imageUpload');
+const uploadStatus = document.getElementById('uploadStatus');
+const pImage = document.getElementById('pImage');
+
+if (uploadBtn && imageUpload) {
+    uploadBtn.addEventListener('click', () => imageUpload.click());
+
+    imageUpload.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Show uploading status
+        if (uploadStatus) {
+            uploadStatus.style.display = 'block';
+            uploadStatus.textContent = "Uploading to Gallery...";
+        }
+
+        const formData = new FormData();
+        formData.append('image', file);
+
+        try {
+            // Using a public ImgBB API key (Free for non-commercial/test)
+            const response = await fetch('https://api.imgbb.com/1/upload?key=3cff7299a912e742886f3438ed22c60e', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                const directUrl = result.data.url;
+                if (pImage) pImage.value = directUrl;
+                showToast("Image uploaded successfully!", "success");
+                if (uploadStatus) uploadStatus.textContent = "✓ Upload Complete";
+            } else {
+                throw new Error(result.error.message || "Upload failed");
+            }
+        } catch (err) {
+            console.error("Upload error:", err);
+            showToast("Upload failed: " + err.message, "error");
+            if (uploadStatus) uploadStatus.style.display = 'none';
+        }
+    });
+}
+
 // --- ADD PRODUCT FORM ---
 if (form) {
     form.addEventListener('submit', async (e) => {
-        e.preventDefault(); // CRITICAL: Prevents reload
+        e.preventDefault();
         console.log("Form submitting...");
 
-        showStatus("Adding product...", "success");
+        showToast("Adding product...", "info");
 
         const product = {
             name: document.getElementById('pName').value,
