@@ -350,17 +350,21 @@ async function loadOrders() {
 
                 div.innerHTML = `
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <span style="font-weight: bold; color: #666;">ID: ${order.customerCode}</span>
+                        <span style="font-weight: bold; color: #121212; font-size: 1.1rem;">${order.customerName}</span>
                         <span style="font-size: 0.8rem; color: #999;">${date}</span>
                     </div>
-                    <p><strong>Customer:</strong> ${order.customerName}</p>
-                    <div style="background: #fdfdfd; padding: 10px; border: 1px dashed #ddd; margin: 10px 0; font-size: 0.9rem; white-space: pre-line;">
+                    <p style="margin-bottom: 5px;"><strong>Phone:</strong> ${order.customerPhone}</p>
+                    <p style="margin-bottom: 5px;"><strong>Address:</strong> ${order.customerAddress}, ${order.customerCity}</p>
+                    
+                    <div style="background: #f9f9f9; padding: 12px; border: 1px solid #eee; border-radius: 8px; margin: 15px 0; font-size: 0.95rem; white-space: pre-line; color: #333;">
+                        <strong style="display: block; margin-bottom: 5px; color: #666;">Items:</strong>
                         ${order.summary}
                     </div>
+                    
                     <div style="display: flex; gap: 10px; margin-top: 10px;">
                         ${currentOrderFilter === 'pending' ?
-                        `<button class="complete-order-btn" data-id="${id}" style="background: #4caf50; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; flex: 1;">Mark Complete</button>` :
-                        `<button class="delete-order-btn" data-id="${id}" style="background: #ff4d4d; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; flex: 1;">Delete Log</button>`
+                        `<button class="complete-order-btn" data-id="${id}" style="background: #4caf50; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; flex: 1; font-weight: 600;">Mark Shipped / Complete</button>` :
+                        `<button class="delete-order-btn" data-id="${id}" style="background: #ff4d4d; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; flex: 1; font-weight: 600;">Delete Permanently</button>`
                     }
                     </div>
                 `;
@@ -415,6 +419,36 @@ if (btnCompleted) {
         btnPending.style.background = '#eee'; btnPending.style.color = '#333';
         loadOrders();
     };
+}
+
+// --- SIDEBAR NAVIGATION ---
+const sidebarBtns = document.querySelectorAll('.sidebar-btn');
+const adminSections = document.querySelectorAll('.admin-section');
+
+if (sidebarBtns.length > 0) {
+    sidebarBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const target = btn.getAttribute('data-target');
+            if (!target) return; // For the "View Website" link
+
+            // Update Active Button
+            sidebarBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Show Target Section
+            adminSections.forEach(section => {
+                section.classList.remove('active');
+                if (section.id === target) {
+                    section.classList.add('active');
+                }
+            });
+
+            // Auto-refresh data if needed
+            if (target === 'section-orders') loadOrders();
+            if (target === 'section-inventory') loadProducts();
+            if (target === 'section-logs') loadAccessLogs();
+        });
+    });
 }
 
 // Initial Load

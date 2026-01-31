@@ -174,6 +174,102 @@
         #adminMainContent {
             display: none;
         }
+
+        /* TABBED LAYOUT STYLES */
+        .admin-layout {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+            padding-top: 80px;
+        }
+
+        .admin-sidebar {
+            background: #121212;
+            color: white;
+            padding: 40px 20px;
+            position: sticky;
+            top: 80px;
+            height: calc(100vh - 80px);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .sidebar-btn {
+            background: transparent;
+            color: #888;
+            border: none;
+            text-align: left;
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .sidebar-btn.active {
+            background: #222;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        .sidebar-btn:hover:not(.active) {
+            color: white;
+            background: #1a1a1a;
+        }
+
+        .admin-content-area {
+            padding: 40px;
+            background: #f8f9fa;
+        }
+
+        .admin-section {
+            display: none;
+            animation: sectionFadeIn 0.3s ease;
+        }
+
+        .admin-section.active {
+            display: block;
+        }
+
+        @keyframes sectionFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 900px) {
+            .admin-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .admin-sidebar {
+                height: auto;
+                position: relative;
+                top: 0;
+                padding: 20px;
+                flex-direction: row;
+                overflow-x: auto;
+                gap: 10px;
+                white-space: nowrap;
+            }
+
+            .sidebar-btn {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+
+            .admin-content-area {
+                padding: 20px;
+            }
+        }
     </style>
 </head>
 
@@ -195,137 +291,155 @@
             <nav class="container">
                 <div class="logo">
                     <a href="index.html">
-                        <img src="images/logo.png" alt="KHADER" class="brand-logo">
+                        <img src="images/logo.png" alt="KHADER Admin" class="brand-logo">
                     </a>
                 </div>
-                <ul class="nav-links">
-                    <li><a href="index.html">View Site</a></li>
-                    <li><a href="contact.html">Contact</a></li>
-                </ul>
+                <div style="display: flex; align-items: center; gap: 20px;">
+                    <span id="activeSessionCount" style="font-size: 0.8rem; color: #4caf50; font-weight: 800;"></span>
+                    <button id="logoutBtn"
+                        style="background: transparent; border: 1px solid #ff4d4d; color: #ff4d4d; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Logout</button>
+                </div>
             </nav>
         </header>
 
-        <main class="admin-panel container">
-            <div class="admin-card">
-                <h2>Add New Product</h2>
-                <p style="margin-bottom: 2rem; color: #666;">Enter product details below. They will automatically appear
-                    in
-                    their category on the main site.</p>
+        <div class="admin-layout">
+            <!-- Sidebar Navigation -->
+            <aside class="admin-sidebar">
+                <button class="sidebar-btn active" data-target="section-orders">Orders</button>
+                <button class="sidebar-btn" data-target="section-add">Add Product</button>
+                <button class="sidebar-btn" data-target="section-inventory">Inventory</button>
+                <button class="sidebar-btn" data-target="section-settings">Settings</button>
+                <button class="sidebar-btn" data-target="section-logs">Security Logs</button>
+                <hr style="opacity: 0.1; margin: 10px 0;">
+                <a href="index.html" class="sidebar-btn" style="text-decoration: none;">View Site</a>
+            </aside>
 
-                <div id="status" class="status-msg"></div>
+            <!-- Main Content Area -->
+            <main class="admin-content-area">
 
-                <form id="addProductForm">
-                    <div class="grid-two">
-                        <div class="form-group">
-                            <label>Product Name</label>
-                            <input type="text" id="pName" required placeholder="e.g. Jet Black Hoodie">
+                <!-- 1. ORDERS PAGE -->
+                <section id="section-orders" class="admin-section active">
+                    <div class="admin-card">
+                        <h2>Direct Customer Orders</h2>
+                        <p style="margin-bottom: 2rem; color: #666;">View and manage your recent sales here.</p>
+                        <div style="display: flex; gap: 10px; margin-bottom: 2rem;">
+                            <button id="viewPendingOrders" class="btn"
+                                style="background: #333; color: white;">Pending</button>
+                            <button id="viewCompletedOrders" class="btn"
+                                style="background: #eee; color: #333;">Completed</button>
                         </div>
-                        <div class="form-group">
-                            <label>Price (RS.)</label>
-                            <input type="number" id="pPrice" required placeholder="5000">
+                        <div id="ordersList">
+                            <p>Loading orders...</p>
                         </div>
                     </div>
+                </section>
 
-                    <div class="grid-two">
-                        <div class="form-group">
-                            <label>Category (Type or Select)</label>
-                            <input type="text" id="pCategory" list="categoryOptions" required
-                                placeholder="e.g. Jackets, Hoodies, Shirts...">
-                            <datalist id="categoryOptions">
-                                <option value="Jackets">
-                                <option value="Hoodies">
-                                <option value="T-Shirts">
-                                <option value="Trousers">
-                            </datalist>
-                        </div>
-                        <div class="form-group">
-                            <label>Image Link (URL)</label>
-                            <div
-                                style="margin-bottom: 10px; font-size: 0.85rem; background: #fff3cd; padding: 10px; border-radius: 6px; border: 1px solid #ffeeba;">
-                                <strong>Mobile Pe Pic Kese Lagayen?</strong><br>
-                                1. <a href="https://imgbb.com/upload" target="_blank"
-                                    style="color: #856404; text-decoration: underline; font-weight: bold;">Yahan Click
-                                    Kar
-                                    Ke Pic Upload Karen</a><br>
-                                2. Upload hone ke baad <b>"Direct Link"</b> copy karen.<br>
-                                3. Wo link neche wale box me paste kar den.
+                <!-- 2. ADD PRODUCT PAGE -->
+                <section id="section-add" class="admin-section">
+                    <div class="admin-card">
+                        <h2>Add New Product</h2>
+                        <p style="margin-bottom: 2rem; color: #666;">Flash your latest collection to the website.</p>
+                        <div id="status" class="status-msg"></div>
+                        <form id="addProductForm">
+                            <div class="grid-two">
+                                <div class="form-group">
+                                    <label>Product Name</label>
+                                    <input type="text" id="pName" required placeholder="e.g. Jet Black Hoodie">
+                                </div>
+                                <div class="form-group">
+                                    <label>Price (RS.)</label>
+                                    <input type="number" id="pPrice" required placeholder="5000">
+                                </div>
                             </div>
-                            <input type="url" id="pImage" required placeholder="https://i.ibb.co/example.jpg">
+                            <div class="grid-two">
+                                <div class="form-group">
+                                    <label>Category</label>
+                                    <input type="text" id="pCategory" list="categoryOptions" required
+                                        placeholder="Select or Type">
+                                    <datalist id="categoryOptions">
+                                        <option value="Jackets">
+                                        <option value="Hoodies">
+                                        <option value="T-Shirts">
+                                        <option value="Trousers">
+                                    </datalist>
+                                </div>
+                                <div class="form-group">
+                                    <label>Image Link (Direct URL)</label>
+                                    <input type="url" id="pImage" required
+                                        placeholder="https://i.ibb.co/direct-link.jpg">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Description (Optional)</label>
+                                <textarea id="pDesc" rows="3"
+                                    placeholder="Brief details about the product..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="width: 100%;">Upload Product</button>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- 3. INVENTORY PAGE -->
+                <section id="section-inventory" class="admin-section">
+                    <div class="admin-card">
+                        <h2>Live Inventory</h2>
+                        <p style="margin-bottom: 2rem; color: #666;">Recently added products are shown here.</p>
+                        <div id="productList" class="product-list-admin">
+                            <p>Loading inventory...</p>
                         </div>
                     </div>
+                </section>
 
-                    <div class="form-group">
-                        <label>Description (Optional)</label>
-                        <textarea id="pDesc" rows="3" placeholder="Brief details about the product..."></textarea>
+                <!-- 4. SETTINGS PAGE -->
+                <section id="section-settings" class="admin-section">
+                    <div class="admin-card">
+                        <h2>Manage Store Details</h2>
+                        <p style="margin-bottom: 2rem; color: #666;">These details will be shown on your public
+                            "Contact" page.</p>
+                        <form id="contactSettingsForm">
+                            <div class="grid-two">
+                                <div class="form-group">
+                                    <label>WhatsApp / Phone</label>
+                                    <input type="text" id="cPhone" placeholder="+92 300 1234567">
+                                </div>
+                                <div class="form-group">
+                                    <label>Business Email</label>
+                                    <input type="email" id="cEmail" placeholder="support@khader.com">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Store Address</label>
+                                <input type="text" id="cAddress" placeholder="Physical location details">
+                            </div>
+                            <div class="grid-two">
+                                <div class="form-group">
+                                    <label>Instagram Link</label>
+                                    <input type="url" id="cInsta" placeholder="https://instagram.com/khader">
+                                </div>
+                                <div class="form-group">
+                                    <label>Facebook Link</label>
+                                    <input type="url" id="cFB" placeholder="https://facebook.com/khader">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="width: 100%; background: #333;">Update
+                                Contact Info</button>
+                        </form>
                     </div>
+                </section>
 
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">Upload Product</button>
-                </form>
-            </div>
-
-            <div class="admin-card">
-                <h2>Manage Contact Details</h2>
-                <p style="margin-bottom: 2rem; color: #666;">These details will be shown on your public "Contact" page.
-                </p>
-                <form id="contactSettingsForm">
-                    <div class="grid-two">
-                        <div class="form-group">
-                            <label>WhatsApp / Phone</label>
-                            <input type="text" id="cPhone" placeholder="+92 300 1234567">
+                <!-- 5. LOGS PAGE -->
+                <section id="section-logs" class="admin-section">
+                    <div class="admin-card">
+                        <h2>Security Logs</h2>
+                        <p style="margin-bottom: 2rem; color: #666;">Track last 10 entries to your dashboard.</p>
+                        <div id="accessLogList">
+                            <p>Loading logs...</p>
                         </div>
-                        <div class="form-group">
-                            <label>Business Email</label>
-                            <input type="email" id="cEmail" placeholder="support@khader.com">
-                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Store Address</label>
-                        <input type="text" id="cAddress" placeholder="123 Street, Karachi, Pakistan">
-                    </div>
-                    <div class="form-group"
-                        style="background: #fff3cd; padding: 15px; border-radius: 8px; border: 1px solid #ffeeba;">
-                        <label style="color: #856404;">U-CHAT Owner Code (For AI Orders)</label>
-                        <p style="font-size: 0.8rem; color: #856404; margin-bottom: 10px;">
-                            Copy your code from the top of the U-CHAT app and paste it here.
-                        </p>
-                        <input type="text" id="cUchatCode" placeholder="e.g. U-123456" style="border-color: #ffeeba;">
-                    </div>
-                    <div class="grid-two">
-                        <div class="form-group">
-                            <label>Instagram Link</label>
-                            <input type="url" id="cInsta" placeholder="https://instagram.com/khader">
-                        </div>
-                        <div class="form-group">
-                            <label>Facebook Link</label>
-                            <input type="url" id="cFB" placeholder="https://facebook.com/khader">
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%; background: #333;">Update Contact
-                        Info</button>
-                </form>
-            </div>
+                </section>
 
-            <div id="orders" class="admin-card">
-                <h2>Customer Orders (from U-CHAT)</h2>
-                <div style="display: flex; gap: 10px; margin-bottom: 1.5rem;">
-                    <button id="viewPendingOrders" class="btn" style="background: #333; color: white;">Pending</button>
-                    <button id="viewCompletedOrders" class="btn"
-                        style="background: #eee; color: #333;">Completed</button>
-                </div>
-                <div id="ordersList">
-                    <p>Loading orders...</p>
-                </div>
-            </div>
-
-            <div id="manage" class="admin-card">
-                <h2>Live Inventory</h2>
-                <p style="margin-bottom: 2rem; color: #666;">Recently added products are shown here.</p>
-                <div id="productList" class="product-list-admin">
-                    <!-- Products will be loaded here -->
-                    <p>Loading inventory...</p>
-                </div>
-            </div>
-        </main>
+            </main>
+        </div>
     </div>
 
     <script type="module" src="admin.js"></script>

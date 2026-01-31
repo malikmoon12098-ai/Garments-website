@@ -146,25 +146,53 @@
             </div>
         </div>
 
-        <!-- ORDER SELECTION MODAL -->
+        <!-- ORDER SELECTION MODAL (NOW DIRECT ORDER FORM) -->
         <div id="orderModal" class="order-modal">
-            <div class="order-modal-content">
+            <div class="order-modal-content" style="max-width: 500px; text-align: left;">
                 <span id="closeModal" class="close-order-modal">&times;</span>
-                <h2>Complete Your Order</h2>
-                <div class="social-order-btns">
-                    <button id="shareWA" class="social-btn btn-wa">
-                        Order on WhatsApp
-                    </button>
-                    <button id="shareFB" class="social-btn btn-fb">
-                        Order on Messenger
-                    </button>
-                    <button id="shareIG" class="social-btn btn-ig">
-                        Order on Instagram
-                    </button>
+                <h2 style="text-align: center;">Complete Your Order</h2>
+                <p style="text-align: center; font-size: 0.9rem; color: #666; margin-bottom: 20px;">Please enter your
+                    delivery details to confirm your cart order.</p>
+
+                <form id="directOrderForm" class="social-order-btns">
+                    <div class="form-group">
+                        <label style="font-weight: 600; font-size: 0.85rem; display: block; margin-bottom: 5px;">Full
+                            Name</label>
+                        <input type="text" id="custName" required placeholder="Enter your full name"
+                            style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
+                    </div>
+                    <div class="form-group">
+                        <label style="font-weight: 600; font-size: 0.85rem; display: block; margin-bottom: 5px;">Active
+                            Phone Number</label>
+                        <input type="tel" id="custPhone" required placeholder="e.g. 0300 1234567"
+                            style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
+                    </div>
+                    <div class="form-group">
+                        <label
+                            style="font-weight: 600; font-size: 0.85rem; display: block; margin-bottom: 5px;">Shipping
+                            Address</label>
+                        <textarea id="custAddress" required placeholder="House #, Street, Area name" rows="2"
+                            style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit;"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label
+                            style="font-weight: 600; font-size: 0.85rem; display: block; margin-bottom: 5px;">City</label>
+                        <input type="text" id="custCity" required placeholder="e.g. Karachi"
+                            style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
+                    </div>
+
+                    <button type="submit" id="confirmOrderBtn" class="btn btn-primary"
+                        style="width: 100%; padding: 15px; margin-top: 10px; font-weight: 800; text-transform: uppercase; background: #121212;">Confirm
+                        Direct Order</button>
+                </form>
+
+                <div id="orderSuccess" style="display: none; text-align: center; padding: 20px;">
+                    <h3 style="color: #2563eb;">✔ Order Confirmed!</h3>
+                    <p style="margin-top: 10px; color: #444;">Your cart items have been ordered. We will contact you
+                        soon.</p>
+                    <button onclick="localStorage.removeItem('cart'); location.reload();" class="btn btn-secondary"
+                        style="margin-top: 20px; width: 100%;">Close</button>
                 </div>
-                <p style="margin-top: 20px; font-size: 0.85rem; color: #666;">
-                    Your cart items will be automatically attached to your message.
-                </p>
             </div>
         </div>
     </main>

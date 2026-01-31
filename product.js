@@ -88,6 +88,8 @@ function renderProduct(product) {
 // ACTION: Buy Now (Open Modal)
 const orderModal = document.getElementById('orderModal');
 const closeModal = document.getElementById('closeModal');
+const directOrderForm = document.getElementById('directOrderForm');
+const orderSuccessDiv = document.getElementById('orderSuccess');
 
 if (buyBtn && orderModal) {
     buyBtn.addEventListener('click', () => {
@@ -105,51 +107,43 @@ window.addEventListener('click', (e) => {
     if (e.target === orderModal) orderModal.style.display = 'none';
 });
 
-// SOCIAL INDIVIDUAL ACTIONS
-const shareWA = document.getElementById('shareWA');
-const shareFB = document.getElementById('shareFB');
-const shareIG = document.getElementById('shareIG');
+// DIRECT ORDER SUBMISSION (DARAZ STYLE)
+import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-function getOrderText() {
-    if (!currentProduct) return "";
-    return `*Order Request*\n\n*Product:* ${currentProduct.name}\n*Price:* Rs. ${currentProduct.price}\n*Link:* ${window.location.href}\n\nI want to buy this. Please confirm.`;
-}
+if (directOrderForm) {
+    directOrderForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!currentProduct) return;
 
-if (shareWA) {
-    shareWA.addEventListener('click', () => {
-        const text = encodeURIComponent(getOrderText());
-        const url = `https://wa.me/${ownerPhone}?text=${text}`;
-        window.open(url, '_blank');
-        orderModal.style.display = 'none';
-    });
-}
+        const btn = document.getElementById('confirmOrderBtn');
+        btn.disabled = true;
+        btn.textContent = "Processing...";
 
-if (shareFB) {
-    shareFB.addEventListener('click', () => {
-        const text = getOrderText();
-        // Copy to clipboard for easy paste
-        navigator.clipboard.writeText(text).then(() => {
-            alert("Order details copied! Please paste it in Messenger.");
-            const fbHandle = ownerFB.split('/').pop();
-            const url = `https://m.me/${fbHandle}`;
-            window.open(url, '_blank');
-        });
-        orderModal.style.display = 'none';
-    });
-}
+        try {
+            const orderData = {
+                customerName: document.getElementById('custName').value,
+                customerPhone: document.getElementById('custPhone').value,
+                customerAddress: document.getElementById('custAddress').value,
+                customerCity: document.getElementById('custCity').value,
+                customerCode: document.getElementById('custPhone').value, // Use phone as code for now
+                summary: `*Single Product Order*\n- ${currentProduct.name} (Rs. ${currentProduct.price})\n- Link: ${window.location.href}`,
+                totalPrice: parseFloat(currentProduct.price),
+                status: 'pending',
+                timestamp: serverTimestamp()
+            };
 
-if (shareIG) {
-    shareIG.addEventListener('click', () => {
-        const text = getOrderText();
-        // Copy to clipboard for easy paste
-        navigator.clipboard.writeText(text).then(() => {
-            alert("Order details copied! Please paste it in Instagram DM.");
-            // IG handles can be various formats, try to extract handle
-            let handle = ownerInsta.replace('@', '').split('/').pop();
-            const url = `https://www.instagram.com/${handle}/`;
-            window.open(url, '_blank');
-        });
-        orderModal.style.display = 'none';
+            await addDoc(collection(db, "orders"), orderData);
+
+            // Hide form and show success
+            directOrderForm.style.display = 'none';
+            orderSuccessDiv.style.display = 'block';
+
+        } catch (error) {
+            console.error("Order error:", error);
+            alert("Failed to place order. Please try again.");
+            btn.disabled = false;
+            btn.textContent = "Confirm Direct Order";
+        }
     });
 }
 

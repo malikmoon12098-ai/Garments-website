@@ -77,6 +77,8 @@ function removeItem(index) {
 // ACTION: Checkout (Open Modal)
 const orderModal = document.getElementById('orderModal');
 const closeModal = document.getElementById('closeModal');
+const directOrderForm = document.getElementById('directOrderForm');
+const orderSuccessDiv = document.getElementById('orderSuccess');
 
 if (checkoutBtn && orderModal) {
     checkoutBtn.addEventListener('click', () => {
@@ -95,56 +97,50 @@ window.addEventListener('click', (e) => {
     if (e.target === orderModal) orderModal.style.display = 'none';
 });
 
-// SOCIAL INDIVIDUAL ACTIONS
-const shareWA = document.getElementById('shareWA');
-const shareFB = document.getElementById('shareFB');
-const shareIG = document.getElementById('shareIG');
+// DIRECT ORDER SUBMISSION (DARAZ STYLE)
+import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-function getCartText() {
-    let message = `*New Order Request*\n`;
-    let total = 0;
+if (directOrderForm) {
+    directOrderForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (cart.length === 0) return;
 
-    cart.forEach(item => {
-        message += `- ${item.name} (Rs. ${item.price})\n`;
-        total += parseFloat(item.price);
-    });
+        const btn = document.getElementById('confirmOrderBtn');
+        btn.disabled = true;
+        btn.textContent = "Processing...";
 
-    message += `\n*Total Bill:* Rs. ${total}\n\nI want to order these items. Please confirm.`;
-    return message;
-}
+        try {
+            let itemsSummary = `*Cart Order*\n`;
+            let total = 0;
+            cart.forEach(item => {
+                itemsSummary += `- ${item.name} (Rs. ${item.price})\n`;
+                total += parseFloat(item.price);
+            });
 
-if (shareWA) {
-    shareWA.addEventListener('click', () => {
-        const text = encodeURIComponent(getCartText());
-        const url = `https://wa.me/${ownerPhone}?text=${text}`;
-        window.open(url, '_blank');
-        orderModal.style.display = 'none';
-    });
-}
+            const orderData = {
+                customerName: document.getElementById('custName').value,
+                customerPhone: document.getElementById('custPhone').value,
+                customerAddress: document.getElementById('custAddress').value,
+                customerCity: document.getElementById('custCity').value,
+                customerCode: document.getElementById('custPhone').value,
+                summary: itemsSummary,
+                totalPrice: total,
+                status: 'pending',
+                timestamp: serverTimestamp()
+            };
 
-if (shareFB) {
-    shareFB.addEventListener('click', () => {
-        const text = getCartText();
-        navigator.clipboard.writeText(text).then(() => {
-            alert("Order details copied! Please paste it in Messenger.");
-            const fbHandle = ownerFB.split('/').pop();
-            const url = `https://m.me/${fbHandle}`;
-            window.open(url, '_blank');
-        });
-        orderModal.style.display = 'none';
-    });
-}
+            await addDoc(collection(db, "orders"), orderData);
 
-if (shareIG) {
-    shareIG.addEventListener('click', () => {
-        const text = getCartText();
-        navigator.clipboard.writeText(text).then(() => {
-            alert("Order details copied! Please paste it in Instagram DM.");
-            let handle = ownerInsta.replace('@', '').split('/').pop();
-            const url = `https://www.instagram.com/${handle}/`;
-            window.open(url, '_blank');
-        });
-        orderModal.style.display = 'none';
+            // Hide form and show success
+            directOrderForm.style.display = 'none';
+            orderSuccessDiv.style.display = 'block';
+
+        } catch (error) {
+            console.error("Order error:", error);
+            alert("Failed to place order. Please try again.");
+            btn.disabled = false;
+            btn.textContent = "Confirm Direct Order";
+        }
     });
 }
 
