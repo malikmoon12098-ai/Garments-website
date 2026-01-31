@@ -247,27 +247,59 @@
 
         @media (max-width: 900px) {
             .admin-layout {
-                grid-template-columns: 1fr;
+                display: flex;
+                flex-direction: column;
+                padding-top: 60px;
+                overflow-x: hidden;
             }
 
             .admin-sidebar {
                 height: auto;
-                position: relative;
-                top: 0;
-                padding: 20px;
+                position: sticky;
+                top: 60px;
+                z-index: 900;
+                padding: 10px;
                 flex-direction: row;
                 overflow-x: auto;
-                gap: 10px;
+                gap: 8px;
                 white-space: nowrap;
+                background: #121212;
+                border-bottom: 1px solid #333;
+                width: 100%;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .admin-sidebar hr {
+                display: none;
             }
 
             .sidebar-btn {
                 padding: 10px 15px;
-                font-size: 0.9rem;
+                font-size: 0.85rem;
+                flex-shrink: 0;
             }
 
             .admin-content-area {
-                padding: 20px;
+                padding: 20px 15px;
+                width: 100%;
+                box-sizing: border-box;
+                overflow-x: hidden;
+            }
+
+            .admin-card {
+                padding: 1.5rem;
+                margin-bottom: 1.5rem;
+                width: 100%;
+            }
+
+            .grid-two {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .product-list-admin {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 15px;
             }
         }
     </style>
