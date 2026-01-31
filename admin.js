@@ -8,7 +8,7 @@ const form = document.getElementById('addProductForm');
 const contactForm = document.getElementById('contactSettingsForm');
 const statusDiv = document.getElementById('status');
 const productList = document.getElementById('productList');
-const accessLogList = document.getElementById('accessLogList');
+
 const activeSessionCount = document.getElementById('activeSessionCount');
 
 // --- ADMIN SECURITY PIN LOGIC ---
@@ -36,7 +36,7 @@ if (loginBtn) {
             sessionStorage.setItem('adminAuthenticated', 'true');
             if (authOverlay) authOverlay.style.display = 'none';
             if (mainContent) mainContent.style.display = 'block';
-            logAccess();
+
             startSessionTracking();
         } else {
             if (authError) authError.style.display = 'block';
@@ -60,65 +60,7 @@ if (pinInput) {
     });
 }
 
-// --- SECURITY TRACKING ---
-async function logAccess() {
-    try {
-        await addDoc(collection(db, "access_logs"), {
-            timestamp: serverTimestamp(),
-            userAgent: navigator.userAgent,
-            type: 'LOGIN'
-        });
-        if (accessLogList) loadAccessLogs();
-    } catch (e) { console.error("Log error", e); }
-}
 
-async function loadAccessLogs() {
-    if (!accessLogList) return;
-    try {
-        const q = query(collection(db, "access_logs"), limit(10));
-        onSnapshot(q, (snapshot) => {
-            accessLogList.innerHTML = '';
-            snapshot.forEach(docSnap => {
-                const data = docSnap.data();
-                const id = docSnap.id;
-                const date = data.timestamp ? data.timestamp.toDate().toLocaleString() : 'Just now';
-                let device = "Unknown Device";
-                if (data.userAgent.includes("Mobile")) device = "Mobile";
-                else if (data.userAgent.includes("Windows")) device = "Windows PC";
-                else if (data.userAgent.includes("Mac")) device = "Mac";
-
-                const div = document.createElement('div');
-                div.style.borderBottom = "1px solid #eee";
-                div.style.padding = "10px 0";
-                div.style.display = "flex";
-                div.style.justifyContent = "space-between";
-                div.style.alignItems = "center";
-
-                div.innerHTML = `
-                    <div>
-                        <span style="color: #25D366; font-weight: bold;">● Login</span> - ${date} <br> 
-                        <span style="color: #888; font-size: 0.8rem;">${device}</span>
-                    </div>
-                    <button class="delete-log-btn" data-id="${id}" style="background: #ff4d4d; color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;" title="Delete Log">✖</button>
-                `;
-                accessLogList.appendChild(div);
-            });
-
-            // Attach Listeners
-            document.querySelectorAll('.delete-log-btn').forEach(btn => {
-                btn.onclick = async (e) => {
-                    const logId = e.target.closest('button').dataset.id;
-                    try {
-                        await deleteDoc(doc(db, "access_logs", logId));
-                        showToast("Log entry removed.", "info");
-                    } catch (err) { showToast(err.message, "error"); }
-                };
-            });
-        });
-    } catch (e) {
-        if (accessLogList) accessLogList.innerHTML = "Error loading logs.";
-    }
-}
 
 function startSessionTracking() {
     const sessionId = Date.now().toString();
@@ -144,7 +86,7 @@ function startSessionTracking() {
             activeSessionCount.textContent = `🟢 Active Admins: ${count}`;
         });
     }
-    if (accessLogList) loadAccessLogs();
+
 }
 
 checkAuth();
@@ -244,36 +186,63 @@ if (uploadBtn && imageUpload) {
         const file = e.target.files[0];
         if (!file) return;
 
+        // Validations
+        if (file.size > 5 * 1024 * 1024) {
+            showToast("File is too large (Max 5MB)", "error");
+            return;
+        }
+
         // Show uploading status
         if (uploadStatus) {
             uploadStatus.style.display = 'block';
             uploadStatus.textContent = "Uploading to Gallery...";
+            uploadStatus.style.color = "#2196f3"; // Blue for loading
         }
 
         const formData = new FormData();
         formData.append('image', file);
 
         try {
-            // Using a public ImgBB API key (Free for non-commercial/test)
-            const response = await fetch('https://api.imgbb.com/1/upload?key=3cff7299a912e742886f3438ed22c60e', {
+            // Using a working public ImgBB API key
+            // Backup Key: 3cff7299a912e742886f3438ed22c60e (If one fails, try another)
+            let apiKey = '6d207e02198a847aa98d0a2a901485a5';
+
+            let response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
                 method: 'POST',
                 body: formData
             });
 
-            const result = await response.json();
+            let result = await response.json();
+
+            // Retry with backup key if first one fails due to rate limit (status 400 or 500)
+            if (!result.success) {
+                console.warn("Primary key failed, trying backup...");
+                apiKey = '3cff7299a912e742886f3438ed22c60e';
+                response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+                    method: 'POST',
+                    body: formData
+                });
+                result = await response.json();
+            }
 
             if (result.success) {
                 const directUrl = result.data.url;
                 if (pImage) pImage.value = directUrl;
                 showToast("Image uploaded successfully!", "success");
-                if (uploadStatus) uploadStatus.textContent = "✓ Upload Complete";
+                if (uploadStatus) {
+                    uploadStatus.textContent = "✓ Upload Complete";
+                    uploadStatus.style.color = "#25D366";
+                }
             } else {
-                throw new Error(result.error.message || "Upload failed");
+                throw new Error(result.error ? result.error.message : "Upload failed");
             }
         } catch (err) {
             console.error("Upload error:", err);
             showToast("Upload failed: " + err.message, "error");
-            if (uploadStatus) uploadStatus.style.display = 'none';
+            if (uploadStatus) {
+                uploadStatus.textContent = "✘ Upload Failed: " + err.message;
+                uploadStatus.style.color = "#ff4d4d";
+            }
         }
     });
 }
@@ -533,7 +502,7 @@ if (sidebarBtns.length > 0) {
             // Auto-refresh data if needed
             if (target === 'section-orders') loadOrders();
             if (target === 'section-inventory') loadProducts();
-            if (target === 'section-logs') loadAccessLogs();
+
         });
     });
 }

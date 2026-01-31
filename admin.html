@@ -466,6 +466,40 @@
                 padding: 3px 8px !important;
                 font-size: 0.65rem !important;
             }
+
+            /* Responsive Image Input */
+            .image-input-group {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 10px !important;
+            }
+
+            .image-input-group input {
+                width: 100% !important;
+            }
+
+            .image-input-group button {
+                width: 100% !important;
+                padding: 12px !important;
+            }
+        }
+
+        /* Desktop default for image input */
+        .image-input-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .image-input-group input {
+            flex: 1;
+        }
+
+        .image-input-group button {
+            width: auto;
+            padding: 0 15px;
+            background: #666;
+            font-size: 0.8rem;
+            white-space: nowrap;
         }
     </style>
 </head>
@@ -509,7 +543,7 @@
                 <button class="sidebar-btn" data-target="section-add">Add Product</button>
                 <button class="sidebar-btn" data-target="section-inventory">Inventory</button>
                 <button class="sidebar-btn" data-target="section-settings">Settings</button>
-                <button class="sidebar-btn" data-target="section-logs">Security Logs</button>
+
                 <hr style="opacity: 0.1; margin: 10px 0;">
                 <a href="index.html" class="sidebar-btn" style="text-decoration: none;">View Site</a>
             </aside>
@@ -572,11 +606,10 @@
                                 </div>
                                 <div class="form-group">
                                     <label>Product Image</label>
-                                    <div style="display: flex; gap: 8px;">
-                                        <input type="url" id="pImage" required style="flex: 1;"
-                                            placeholder="Direct URL or Upload →">
-                                        <button type="button" id="uploadBtn" class="btn btn-secondary"
-                                            style="width: auto; padding: 0 15px; background: #666; font-size: 0.8rem;">
+
+                                    <div class="image-input-group">
+                                        <input type="url" id="pImage" required placeholder="Direct URL or Upload →">
+                                        <button type="button" id="uploadBtn" class="btn btn-secondary">
                                             Gallery
                                         </button>
                                     </div>
@@ -644,16 +677,7 @@
                     </div>
                 </section>
 
-                <!-- 5. LOGS PAGE -->
-                <section id="section-logs" class="admin-section">
-                    <div class="admin-card">
-                        <h2>Security Logs</h2>
-                        <p style="margin-bottom: 2rem; color: #666;">Track last 10 entries to your dashboard.</p>
-                        <div id="accessLogList">
-                            <p>Loading logs...</p>
-                        </div>
-                    </div>
-                </section>
+
 
             </main>
         </div>
