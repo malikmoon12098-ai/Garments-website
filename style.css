@@ -298,6 +298,113 @@ header.scrolled .brand-logo {
     color: var(--text-white);
 }
 
+/* Global Order Modal */
+.order-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+    animation: modalFadeIn 0.3s ease;
+}
+
+.order-modal-content {
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 450px;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.close-order-modal {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #888;
+}
+
+.order-modal h2 {
+    margin-bottom: 30px;
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #121212;
+}
+
+.social-order-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.social-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 18px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: transform 0.2s, background 0.3s;
+    cursor: pointer;
+    border: none;
+    font-size: 1rem;
+}
+
+.social-btn:active {
+    transform: scale(0.98);
+}
+
+.btn-wa {
+    background: #25D366;
+    color: white;
+}
+
+.btn-wa:hover {
+    background: #1ebe57;
+}
+
+.btn-fb {
+    background: #1877F2;
+    color: white;
+}
+
+.btn-fb:hover {
+    background: #145dbf;
+}
+
+.btn-ig {
+    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+    color: white;
+}
+
+.btn-ig:hover {
+    opacity: 0.9;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .btn-minimal {
     font-size: 0.8rem;
     text-transform: uppercase;

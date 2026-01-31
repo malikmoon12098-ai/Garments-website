@@ -18,6 +18,8 @@ const cartBtn = document.getElementById('addToCartBtn');
 
 let currentProduct = null;
 let ownerPhone = '';
+let ownerInsta = '';
+let ownerFB = '';
 
 async function initProduct() {
     if (!productId) {
@@ -41,8 +43,11 @@ async function initProduct() {
         // 2. Fetch Owner Phone for WhatsApp (Legacy but keeping settings fetch)
         const settingsSnap = await getDoc(doc(db, "settings", "contact"));
         if (settingsSnap.exists()) {
-            ownerPhone = settingsSnap.data().phone || '';
+            const sData = settingsSnap.data();
+            ownerPhone = sData.phone || '';
             ownerPhone = ownerPhone.replace(/\D/g, '');
+            ownerInsta = sData.insta || '';
+            ownerFB = sData.fb || '';
         }
 
     } catch (error) {
@@ -80,16 +85,71 @@ function renderProduct(product) {
     }
 }
 
-// ACTION: Buy Now (Redirect to U-CHAT)
-if (buyBtn) {
+// ACTION: Buy Now (Open Modal)
+const orderModal = document.getElementById('orderModal');
+const closeModal = document.getElementById('closeModal');
+
+if (buyBtn && orderModal) {
     buyBtn.addEventListener('click', () => {
-        if (!currentProduct) return;
+        orderModal.style.display = 'flex';
+    });
+}
 
-        const text = `*Order Request*\n\n*Product:* ${currentProduct.name}\n*Price:* Rs. ${currentProduct.price}\n*Link:* ${window.location.href}\n*Image:* ${currentProduct.image}\n\nI want to buy this. Please confirm.`;
+if (closeModal) {
+    closeModal.addEventListener('click', () => {
+        orderModal.style.display = 'none';
+    });
+}
 
-        // Redirect to U-CHAT with parameters
-        const uChatUrl = `U-CHAT/index.html?orderText=${encodeURIComponent(text)}&pId=${productId}&pName=${encodeURIComponent(currentProduct.name)}&pPrice=${currentProduct.price}`;
-        window.location.href = uChatUrl;
+window.addEventListener('click', (e) => {
+    if (e.target === orderModal) orderModal.style.display = 'none';
+});
+
+// SOCIAL INDIVIDUAL ACTIONS
+const shareWA = document.getElementById('shareWA');
+const shareFB = document.getElementById('shareFB');
+const shareIG = document.getElementById('shareIG');
+
+function getOrderText() {
+    if (!currentProduct) return "";
+    return `*Order Request*\n\n*Product:* ${currentProduct.name}\n*Price:* Rs. ${currentProduct.price}\n*Link:* ${window.location.href}\n\nI want to buy this. Please confirm.`;
+}
+
+if (shareWA) {
+    shareWA.addEventListener('click', () => {
+        const text = encodeURIComponent(getOrderText());
+        const url = `https://wa.me/${ownerPhone}?text=${text}`;
+        window.open(url, '_blank');
+        orderModal.style.display = 'none';
+    });
+}
+
+if (shareFB) {
+    shareFB.addEventListener('click', () => {
+        const text = getOrderText();
+        // Copy to clipboard for easy paste
+        navigator.clipboard.writeText(text).then(() => {
+            alert("Order details copied! Please paste it in Messenger.");
+            const fbHandle = ownerFB.split('/').pop();
+            const url = `https://m.me/${fbHandle}`;
+            window.open(url, '_blank');
+        });
+        orderModal.style.display = 'none';
+    });
+}
+
+if (shareIG) {
+    shareIG.addEventListener('click', () => {
+        const text = getOrderText();
+        // Copy to clipboard for easy paste
+        navigator.clipboard.writeText(text).then(() => {
+            alert("Order details copied! Please paste it in Instagram DM.");
+            // IG handles can be various formats, try to extract handle
+            let handle = ownerInsta.replace('@', '').split('/').pop();
+            const url = `https://www.instagram.com/${handle}/`;
+            window.open(url, '_blank');
+        });
+        orderModal.style.display = 'none';
     });
 }
 

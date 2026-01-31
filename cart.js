@@ -9,14 +9,19 @@ const cartCountHeader = document.getElementById('cartCountHeader');
 
 let cart = JSON.parse(localStorage.getItem('cart') || '[]');
 let ownerPhone = '';
+let ownerInsta = '';
+let ownerFB = '';
 
 // Load Owner Phone
 async function loadSettings() {
     try {
         const docSnap = await getDoc(doc(db, "settings", "contact"));
         if (docSnap.exists()) {
-            ownerPhone = docSnap.data().phone || '';
+            const sData = docSnap.data();
+            ownerPhone = sData.phone || '';
             ownerPhone = ownerPhone.replace(/\D/g, '');
+            ownerInsta = sData.insta || '';
+            ownerFB = sData.fb || '';
         }
     } catch (error) {
         console.error("Error loading settings:", error);
@@ -69,23 +74,77 @@ function removeItem(index) {
     renderCart();
 }
 
-if (checkoutBtn) {
+// ACTION: Checkout (Open Modal)
+const orderModal = document.getElementById('orderModal');
+const closeModal = document.getElementById('closeModal');
+
+if (checkoutBtn && orderModal) {
     checkoutBtn.addEventListener('click', () => {
         if (cart.length === 0) return alert("Cart is empty!");
+        orderModal.style.display = 'flex';
+    });
+}
 
-        let message = `*New Order Request*\n`;
-        let total = 0;
+if (closeModal) {
+    closeModal.addEventListener('click', () => {
+        orderModal.style.display = 'none';
+    });
+}
 
-        cart.forEach(item => {
-            message += `- ${item.name} (Rs. ${item.price})\n`;
-            total += parseFloat(item.price);
+window.addEventListener('click', (e) => {
+    if (e.target === orderModal) orderModal.style.display = 'none';
+});
+
+// SOCIAL INDIVIDUAL ACTIONS
+const shareWA = document.getElementById('shareWA');
+const shareFB = document.getElementById('shareFB');
+const shareIG = document.getElementById('shareIG');
+
+function getCartText() {
+    let message = `*New Order Request*\n`;
+    let total = 0;
+
+    cart.forEach(item => {
+        message += `- ${item.name} (Rs. ${item.price})\n`;
+        total += parseFloat(item.price);
+    });
+
+    message += `\n*Total Bill:* Rs. ${total}\n\nI want to order these items. Please confirm.`;
+    return message;
+}
+
+if (shareWA) {
+    shareWA.addEventListener('click', () => {
+        const text = encodeURIComponent(getCartText());
+        const url = `https://wa.me/${ownerPhone}?text=${text}`;
+        window.open(url, '_blank');
+        orderModal.style.display = 'none';
+    });
+}
+
+if (shareFB) {
+    shareFB.addEventListener('click', () => {
+        const text = getCartText();
+        navigator.clipboard.writeText(text).then(() => {
+            alert("Order details copied! Please paste it in Messenger.");
+            const fbHandle = ownerFB.split('/').pop();
+            const url = `https://m.me/${fbHandle}`;
+            window.open(url, '_blank');
         });
+        orderModal.style.display = 'none';
+    });
+}
 
-        message += `\n*Total Bill:* Rs. ${total}\n\nI want to order these items. Please confirm.`;
-
-        // Redirect to U-CHAT with parameters
-        const uChatUrl = `U-CHAT/index.html?orderText=${encodeURIComponent(message)}`;
-        window.location.href = uChatUrl;
+if (shareIG) {
+    shareIG.addEventListener('click', () => {
+        const text = getCartText();
+        navigator.clipboard.writeText(text).then(() => {
+            alert("Order details copied! Please paste it in Instagram DM.");
+            let handle = ownerInsta.replace('@', '').split('/').pop();
+            const url = `https://www.instagram.com/${handle}/`;
+            window.open(url, '_blank');
+        });
+        orderModal.style.display = 'none';
     });
 }
 
