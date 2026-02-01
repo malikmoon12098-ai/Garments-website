@@ -184,6 +184,7 @@ async function getOwnerCode() {
 
 // Ensure init runs and repairs session if needed
 async function init() {
+    console.log("UCHAT BOT V4.0 - ULTRA ROBUST PARSER ACTIVE");
     const urlParams = new URLSearchParams(window.location.search);
     const orderText = urlParams.get('orderText');
 
@@ -370,187 +371,145 @@ function getCustomBotReply(message) {
     return null; // No custom rule found
 }
 
-// AI & Order Automation
+// AI & Order Automation (VERSION 5.0 - HUMAN-LIKE)
 async function triggerAIResponse(chatId, customerMsg) {
-    console.log("AI Triggered for:", customerMsg);
+    console.log("AI Triggered (V5.0 - Human) for:", customerMsg);
 
     try {
         const chatRef = db.collection('chats').doc(chatId);
         const chatSnap = await chatRef.get();
+        if (!chatSnap.exists) return;
+
         const chatData = chatSnap.data() || {};
         const currentState = chatData.orderState || null;
         let finalResponse = null;
         let newState = currentState;
-        let finalOrderData = chatData.tempOrderData || null;
+        let finalOrderData = chatData.tempOrderData || { product: "Unknown", name: null, phone: null, address: null, city: null };
+
+        const msg = customerMsg.trim();
+        const msgLower = msg.toLowerCase();
 
         // 1. Detect Buy Now Start
         if (customerMsg.includes("BUY_NOW:")) {
             const productInfo = customerMsg.replace("BUY_NOW:", "").trim();
-            finalResponse = `Asalam-o-Alaikum! Khader Garments me khushamdeed. 🌟\n\nApka order start ho gaya hai: *${productInfo}*\n\nBarah-e-karam apna order confirm karne ke liye ye 4 details bhej den:\n1. Name\n2. Phone Number\n3. Address\n4. City`;
+            finalResponse = `Asalam-o-Alaikum! Khader Garments me khushamdeed. 🌟\n\nBohat khushi hui ke aapne hamara product pasand kiya: *${productInfo}*\n\nOrder mukammal karne ke liye, barah-e-karam apni ye choti si details bhej den takay hum jald az jald pack kar saken:\n1. Aapka Name\n2. Phone Number\n3. Mukammal Address\n4. Sheher (City)`;
             newState = "ORDER_COLLECTING";
-            finalOrderData = {
-                product: productInfo,
-                name: null, phone: null, address: null, city: null
-            };
+            finalOrderData = { product: productInfo, name: null, phone: null, address: null, city: null };
         }
-        // 2. Handle Order States
+        // 2. Handle Order States (With Conversational Fallback)
         else if (currentState === "ORDER_COLLECTING") {
-            const customReply = getCustomBotReply(customerMsg);
-            if (customReply) {
-                finalResponse = `${customReply}\n\nAbhi apka order process mein hai. Please apni details send kar den takay hum agay barh saken.`;
+            if (msgLower === "confirm") {
+                finalResponse = "Mohtaram, pehlay barah-e-karam upar mangi gayi details (Name, Phone, Address, City) send kar den, phir confirm kijiyega. Hum ne details note karni hain. 😊";
             } else {
-                // Update temporary data based on message content
-                const msg = customerMsg;
-                const msgLower = msg.toLowerCase();
+                let detailFound = false;
 
-                // 1. Phone Detection (Look for 10-13 digits)
+                // Robust Parsing
                 const phoneMatch = msg.match(/\d{10,13}/);
-                if (phoneMatch) {
-                    finalOrderData.phone = phoneMatch[0];
-                }
+                if (phoneMatch) { finalOrderData.phone = phoneMatch[0]; detailFound = true; }
 
-                // 2. City Detection (Look for keywords or specific city names if simple)
-                const cityKeywords = ["city", "sheher", "karachi", "lahore", "islamabad", "rawalpindi", "faisalabad", "multan", "quetta", "peshawar", "sialkot", "gujranwala"];
-                cityKeywords.forEach(city => {
-                    if (msgLower.includes(city)) {
-                        // If it's a specific city name, save it. If it's a keyword like "city:", extract what's after
-                        if (msgLower.includes(city + ":")) {
-                            finalOrderData.city = msg.split(new RegExp(city + ":", "i"))[1].trim().split(/\s\s|\n|3\.|4\./)[0].trim();
-                        } else if (!finalOrderData.city && city !== "city" && city !== "sheher") {
-                            finalOrderData.city = city.charAt(0).toUpperCase() + city.slice(1);
-                        }
-                    }
+                const cities = ["karachi", "lahore", "islamabad", "rawalpindi", "faisalabad", "multan", "quetta", "peshawar", "sialkot", "gujranwala"];
+                cities.forEach(city => {
+                    if (msgLower.includes(city)) { finalOrderData.city = city.charAt(0).toUpperCase() + city.slice(1); detailFound = true; }
                 });
 
-                // 3. Name Detection
-                // If message has "1. Name", "Name:", or if it's a short string with no digits (after removing symbols)
                 const nameRegex = /(?:1\.|name:|naam:)\s*([a-zA-Z\s]+)/i;
                 const nameMatch = msg.match(nameRegex);
                 if (nameMatch) {
-                    finalOrderData.name = nameMatch[1].trim().split(/\s\s|\n|2\.|3\./)[0].trim();
-                } else if (!finalOrderData.name && !msg.match(/\d/) && msg.split(' ').length <= 4) {
-                    finalOrderData.name = msg.trim();
+                    const extracted = nameMatch[1].trim().split(/\n|2\.|3\.|4\.|phone|address|city/i)[0].trim();
+                    if (extracted) { finalOrderData.name = extracted; detailFound = true; }
+                } else if (!finalOrderData.name && !msg.match(/\d/) && msg.split(' ').length <= 3) {
+                    finalOrderData.name = msg.trim(); detailFound = true;
                 }
 
-                // 4. Address Detection
-                // If message has "3.", "Address:", or if it's a long message and we already have phone/name
                 const addrRegex = /(?:3\.|address:|pata:)\s*(.+)/i;
                 const addrMatch = msg.match(addrRegex);
                 if (addrMatch) {
-                    finalOrderData.address = addrMatch[1].trim().split(/\s\s|\n|4\./)[0].trim();
-                } else if (!finalOrderData.address && msg.length > 12) {
-                    // If it's not the name or phone, assume it's address
-                    if (msg !== finalOrderData.name && msg !== finalOrderData.phone && !msgLower.includes("confirm")) {
-                        finalOrderData.address = msg.trim();
-                    }
+                    const extracted = addrMatch[1].trim().split(/\n|4\.|city/i)[0].trim();
+                    if (extracted) { finalOrderData.address = extracted; detailFound = true; }
+                } else if (!finalOrderData.address && msg.length > 12 && msg !== finalOrderData.name && !msgLower.includes(finalOrderData.city?.toLowerCase())) {
+                    finalOrderData.address = msg; detailFound = true;
                 }
 
-                // Final check for missing fields
-                let missing = [];
-                if (!finalOrderData.name) missing.push("1. Name");
-                if (!finalOrderData.phone) missing.push("2. Phone Number");
-                if (!finalOrderData.address) missing.push("3. Address");
-                if (!finalOrderData.city) missing.push("4. City");
+                // If NO detail was found, maybe they are asking a question? Fallback to Gemini
+                if (!detailFound) {
+                    console.log("No specific detail found, using LLM for conversational reply.");
+                    const msgsSnapshot = await db.collection('chats').doc(chatId).collection('messages').limit(10).get();
+                    let history = []; snapToDocs(msgsSnapshot, history);
 
-                if (missing.length > 0) {
-                    finalResponse = `Shukriya! details check kar li hain.\n\n*Missing Details:*\n${missing.join('\n')}\n\nBarah-e-karam baki details bhej den takay hum order finalize kar saken.`;
-                    newState = "ORDER_COLLECTING";
+                    const inventory = await getInventorySummary();
+                    finalResponse = await askAI(msg, history, inventory);
+
+                    // Add the missing details reminder to the AI response
+                    let missing = getMissing(finalOrderData);
+                    if (missing.length > 0) {
+                        finalResponse += `\n\n*(Reminder: Mohtaram, order finalize karne ke liye humein abhi ye details baki hain: ${missing.join(', ')})*`;
+                    }
                 } else {
-                    // Everything collected!
-                    finalResponse = `Zabardast! Sari details mil gayi hain:\n\n👤 *Name:* ${finalOrderData.name}\n📞 *Phone:* ${finalOrderData.phone}\n📍 *Address:* ${finalOrderData.address}\n🏙️ *City:* ${finalOrderData.city}\n📦 *Product:* ${finalOrderData.product}\n\nKia ye sab sahi hai? Agar sahi hai to niche **"CONFIRM"** likh den.`;
-                    newState = "ORDER_CONFIRMING";
+                    // Detail was found! Standard polite response
+                    let missing = getMissing(finalOrderData);
+
+                    if (missing.length > 0) {
+                        finalResponse = `JazakAllah! Details note kar li hain.\n\n*Mohtaram, barah-e-karam bas ye baki details bhej den:*\n${missing.join('\n')}\n\nTakay hum process mukammal kar saken. 😊`;
+                    } else {
+                        finalResponse = `Zabardast! Aap ki tamam details mil gayi hain:\n\n👤 *Name:* ${finalOrderData.name}\n📞 *Phone:* ${finalOrderData.phone}\n📍 *Address:* ${finalOrderData.address}\n🏙️ *City:* ${finalOrderData.city}\n📦 *Product:* ${finalOrderData.product}\n\nKia ye sab sahi hai? Agar sab theek hai to barah-e-karam niche **"CONFIRM"** likh kar bhej den takay hum order dispatch kar saken.`;
+                        newState = "ORDER_CONFIRMING";
+                    }
                 }
             }
         }
         else if (currentState === "ORDER_CONFIRMING") {
             if (customerMsg.trim().toUpperCase() === "CONFIRM") {
-                // FINALIZE ORDER
                 try {
-                    const summaryText = `*AI Bot Order*\n- Product: ${finalOrderData.product}\n- Name: ${finalOrderData.name}\n- Phone: ${finalOrderData.phone}\n- Address: ${finalOrderData.address}\n- City: ${finalOrderData.city}`;
-                    const orderData = {
-                        customerName: finalOrderData.name,
-                        customerPhone: finalOrderData.phone,
-                        customerAddress: finalOrderData.address,
-                        customerCity: finalOrderData.city,
-                        customerCode: "Chat: " + myUserCode,
-                        summary: summaryText,
-                        totalPrice: 0,
-                        status: 'pending',
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    };
-                    await db.collection('orders').add(orderData);
-                    finalResponse = "Mubarak ho! 🎉 Apka order confirm ho gaya hai. Hum jald hi apse mazeed raabta karenge. Shukriya!";
-                    newState = null;
-                    finalOrderData = null;
+                    const summary = `*AI Bot Order*\n- Product: ${finalOrderData.product}\n- Name: ${finalOrderData.name}\n- Phone: ${finalOrderData.phone}\n- Address: ${finalOrderData.address}\n- City: ${finalOrderData.city}`;
+                    await db.collection('orders').add({
+                        customerName: finalOrderData.name, customerPhone: finalOrderData.phone,
+                        customerAddress: finalOrderData.address, customerCity: finalOrderData.city,
+                        summary: summary, status: 'pending', timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    finalResponse = "Mubarak ho! 🎉 Aapka order confirm ho gaya hai. Hum aap se bohat jald raabta karenge. Khader Garments se shopping karne ka bohat shukriya!";
+                    newState = null; finalOrderData = null;
                 } catch (err) {
-                    console.error("Order Save Error", err);
-                    finalResponse = "Maazrat, order save karne mein masla hua. Ap barah-e-karam Shop Owner se direct rabta kar len.";
+                    finalResponse = "Maazrat khwah hain, order save karte waqt masla hua. Please Shop Owner se contact karen.";
                 }
             } else {
-                const customReply = getCustomBotReply(customerMsg);
-                if (customReply) {
-                    finalResponse = `${customReply}\n\nOrder confirm karne ke liye bas **"CONFIRM"** likhen.`;
-                } else {
-                    finalResponse = "Please order confirm karne ke liye niche **CONFIRM** likh kar bhej den.";
-                }
+                finalResponse = "Aap ka order confirm karnay ke liye bas **CONFIRM** likh den. Agar koi tabdeeli karni hai to barah-e-karam bata den. 😊";
             }
         }
 
-        // 3. General Bot Logic (If not in order flow or no specific response yet)
+        // 3. General Bot Fallback (If no response yet)
         if (!finalResponse) {
-            finalResponse = getCustomBotReply(customerMsg);
+            const msgsSnapshot = await db.collection('chats').doc(chatId).collection('messages').limit(10).get();
+            let history = []; snapToDocs(msgsSnapshot, history);
+            const inventory = await getInventorySummary();
+            finalResponse = await askAI(msg, history, inventory);
         }
 
         if (!finalResponse) {
-            if (GEMINI_API_KEY && GEMINI_API_KEY !== "REPLACE_WITH_YOUR_GEMINI_KEY" && GEMINI_API_KEY.length > 20) {
-                const msgsSnapshot = await db.collection('chats').doc(chatId).collection('messages').limit(10).get();
-                let history = [];
-                msgsSnapshot.forEach(doc => history.push(doc.data()));
-                history.sort((a, b) => (a.timestamp?.toMillis?.() || 0) - (b.timestamp?.toMillis?.() || 0));
-
-                // Fetch live inventory to guide the AI
-                const inventory = await getInventorySummary();
-                finalResponse = await askAI(customerMsg, history, inventory);
-            }
+            finalResponse = "Maazrat, mujhy is sawal ka jawab sahi se nahi maloom. 🤖 Aap barah-e-karam Store Owner se direct baat kar len.";
         }
 
-        if (!finalResponse) {
-            finalResponse = "Maazrat, mujhy is sawal ka jawab nahi maloom. 🤖\n\nAp barah-e-karam Shop Owner se direct baat kar len:\n👉 https://wa.me/923001234567";
-        }
-
-        // 4. Update Chat State & Send Message
+        // 4. Send Message to Firestore
         let ownerCode = await getOwnerCode();
-        if (!ownerCode) return;
-        ownerCode = ownerCode.trim().toUpperCase();
+        if (ownerCode) {
+            ownerCode = ownerCode.trim().toUpperCase();
+            const snapshot = await db.collection('users').where('userCode', '==', ownerCode).get();
+            if (!snapshot.empty) {
+                const ownerId = snapshot.docs[0].id;
+                const batch = db.batch();
+                const msgRef = db.collection('chats').doc(chatId).collection('messages').doc();
+                batch.set(msgRef, { senderId: ownerId, text: finalResponse, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+                batch.update(chatRef, {
+                    lastMessage: finalResponse, lastMessageTime: firebase.firestore.FieldValue.serverTimestamp(),
+                    lastSenderId: ownerId, orderState: newState, tempOrderData: finalOrderData
+                });
+                await batch.commit();
+            }
+        }
 
-        const snapshot = await db.collection('users').where('userCode', '==', ownerCode).get();
-        if (snapshot.empty) return;
-        const ownerId = snapshot.docs[0].id;
-
-        const batch = db.batch();
-        const msgRef = db.collection('chats').doc(chatId).collection('messages').doc();
-        batch.set(msgRef, {
-            senderId: ownerId,
-            text: finalResponse,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        // Update Metadata + State
-        batch.update(chatRef, {
-            lastMessage: finalResponse,
-            lastMessageTime: firebase.firestore.FieldValue.serverTimestamp(),
-            lastSenderId: ownerId,
-            orderState: newState,
-            tempOrderData: finalOrderData
-        });
-
-        await batch.commit();
-        console.log("Bot Response Sent - State:", newState);
-
-    } catch (e) {
-        console.error("AI Trigger Error", e);
-    }
+    } catch (e) { console.error("AI Error:", e); }
 }
+
+
 
 async function getInventorySummary() {
     try {
@@ -569,22 +528,31 @@ async function getInventorySummary() {
 }
 
 async function askAI(message, history, inventory = "") {
-    const prompt = `You are a professional sales assistant for "KHADER Garments Store".
-    
-    Our Current Inventory:
+    const prompt = `You are "Khader AI", a highly professional, extremely polite, and warm-hearted sales manager for "KHADER Garments Store".
+
+    PERSONALITY:
+    - You speak like a real person, not a robot.
+    - You are ultra-polite ("Bohut Tameez daar"). 
+    - Use words like "Bohat Shukriya", "Mohtaram", "JazakAllah", "InshaAllah", and "Aap" (never use "Tum").
+    - You are helpful and want to build a relationship with the customer.
+
+    OUR MISSION:
+    We provide high-quality garments. We offer Cash on Delivery across Pakistan. Delivery takes 2-3 days.
+
+    CURRENT INVENTORY:
     ${inventory}
-    
-    Response Rules:
-    - Language: Roman Urdu / Urdu (unless customer speaks English).
-    - Be polite and helpful.
-    - Mention specific items from our inventory if relevant.
-    - If asked about prices, use the ones from the inventory list above.
-    
-    Context History:
+
+    RULES:
+    1. Language: Always respond in natural Roman Urdu (Urdu written in English alphabets) unless the user speaks English.
+    2. Keep responses concise but warm.
+    3. If asked about prices or stock, refer to the INVENTORY above.
+    4. If the user is just chatting, be friendly.
+
+    CONVERSATION HISTORY:
     ${history.map(m => (m.senderId === myUserId ? "Customer: " : "Store: ") + m.text).join('\n')}
-    
-    User Message: ${message}
-    AI Response:`;
+
+    User's New Message: ${message}
+    Your Polite Response:`;
 
     try {
         const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
@@ -598,6 +566,21 @@ async function askAI(message, history, inventory = "") {
     } catch (e) {
         return null;
     }
+}
+
+// Helper Functions for AI
+function getMissing(data) {
+    let m = [];
+    if (!data.name) m.push("1. Name");
+    if (!data.phone) m.push("2. Phone Number");
+    if (!data.address) m.push("3. Address");
+    if (!data.city) m.push("4. City");
+    return m;
+}
+
+function snapToDocs(snap, arr) {
+    snap.forEach(doc => arr.push(doc.data()));
+    arr.sort((a, b) => (a.timestamp?.toMillis?.() || 0) - (b.timestamp?.toMillis?.() || 0));
 }
 
 async function saveOrderToFirestore(chatId, summary) {
