@@ -400,37 +400,52 @@ async function triggerAIResponse(chatId, customerMsg) {
                 finalResponse = `${customReply}\n\nAbhi apka order process mein hai. Please apni details send kar den takay hum agay barh saken.`;
             } else {
                 // Update temporary data based on message content
-                const msgLower = customerMsg.toLowerCase();
+                const msg = customerMsg;
+                const msgLower = msg.toLowerCase();
 
-                // 1. Better Phone Detection (10-13 digits)
-                const phoneMatch = customerMsg.match(/\d{10,13}/);
-                if (phoneMatch && !finalOrderData.phone) {
+                // 1. Phone Detection (Look for 10-13 digits)
+                const phoneMatch = msg.match(/\d{10,13}/);
+                if (phoneMatch) {
                     finalOrderData.phone = phoneMatch[0];
                 }
 
-                // 2. Better Name Detection (Short string, no numbers, not keywords)
-                const words = customerMsg.split(/\s+/);
-                if (!finalOrderData.name && !customerMsg.match(/\d/) && words.length <= 4) {
-                    finalOrderData.name = customerMsg.trim();
+                // 2. City Detection (Look for keywords or specific city names if simple)
+                const cityKeywords = ["city", "sheher", "karachi", "lahore", "islamabad", "rawalpindi", "faisalabad", "multan", "quetta", "peshawar", "sialkot", "gujranwala"];
+                cityKeywords.forEach(city => {
+                    if (msgLower.includes(city)) {
+                        // If it's a specific city name, save it. If it's a keyword like "city:", extract what's after
+                        if (msgLower.includes(city + ":")) {
+                            finalOrderData.city = msg.split(new RegExp(city + ":", "i"))[1].trim().split(/\s\s|\n|3\.|4\./)[0].trim();
+                        } else if (!finalOrderData.city && city !== "city" && city !== "sheher") {
+                            finalOrderData.city = city.charAt(0).toUpperCase() + city.slice(1);
+                        }
+                    }
+                });
+
+                // 3. Name Detection
+                // If message has "1. Name", "Name:", or if it's a short string with no digits (after removing symbols)
+                const nameRegex = /(?:1\.|name:|naam:)\s*([a-zA-Z\s]+)/i;
+                const nameMatch = msg.match(nameRegex);
+                if (nameMatch) {
+                    finalOrderData.name = nameMatch[1].trim().split(/\s\s|\n|2\.|3\./)[0].trim();
+                } else if (!finalOrderData.name && !msg.match(/\d/) && msg.split(' ').length <= 4) {
+                    finalOrderData.name = msg.trim();
                 }
 
-                // 3. Better City Detection
-                if (!finalOrderData.city) {
-                    if (msgLower.includes("city:") || msgLower.includes("sheher:")) {
-                        finalOrderData.city = customerMsg.split(/city:|sheher:/i)[1].trim();
-                    } else if (msgLower.includes("city") || msgLower.includes("sheher")) {
-                        finalOrderData.city = customerMsg.split(/city|sheher/i)[1].trim();
+                // 4. Address Detection
+                // If message has "3.", "Address:", or if it's a long message and we already have phone/name
+                const addrRegex = /(?:3\.|address:|pata:)\s*(.+)/i;
+                const addrMatch = msg.match(addrRegex);
+                if (addrMatch) {
+                    finalOrderData.address = addrMatch[1].trim().split(/\s\s|\n|4\./)[0].trim();
+                } else if (!finalOrderData.address && msg.length > 12) {
+                    // If it's not the name or phone, assume it's address
+                    if (msg !== finalOrderData.name && msg !== finalOrderData.phone && !msgLower.includes("confirm")) {
+                        finalOrderData.address = msg.trim();
                     }
                 }
 
-                // 4. Address Detection (Longer strings or anything remaining if name/phone/city found)
-                if (!finalOrderData.address && (customerMsg.length > 15 || (finalOrderData.name && finalOrderData.phone && customerMsg.length > 5))) {
-                    if (!customerMsg.includes(finalOrderData.phone || "---") && !customerMsg.includes(finalOrderData.name || "---")) {
-                        finalOrderData.address = customerMsg.trim();
-                    }
-                }
-
-                // Check what's still missing
+                // Final check for missing fields
                 let missing = [];
                 if (!finalOrderData.name) missing.push("1. Name");
                 if (!finalOrderData.phone) missing.push("2. Phone Number");
@@ -438,7 +453,7 @@ async function triggerAIResponse(chatId, customerMsg) {
                 if (!finalOrderData.city) missing.push("4. City");
 
                 if (missing.length > 0) {
-                    finalResponse = `Shukriya! Apki di hui details save kar li hain.\n\nLekin abhi ye cheezen rehti hain:\n${missing.join('\n')}\n\nBarah-e-karam baki details bhi bhej den takay hum order finalize kar saken.`;
+                    finalResponse = `Shukriya! details check kar li hain.\n\n*Missing Details:*\n${missing.join('\n')}\n\nBarah-e-karam baki details bhej den takay hum order finalize kar saken.`;
                     newState = "ORDER_COLLECTING";
                 } else {
                     // Everything collected!
