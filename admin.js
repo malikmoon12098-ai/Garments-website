@@ -1,5 +1,6 @@
-import { db } from './firebase-config.js';
+import { db, storage } from './firebase-config.js';
 import { collection, addDoc, getDocs, deleteDoc, doc, serverTimestamp, query, setDoc, getDoc, updateDoc, onSnapshot, where, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
 console.log("Admin Script Loaded"); // Debugging
 
@@ -173,7 +174,7 @@ async function loadContactInfo() {
     }
 }
 
-// --- IMAGE UPLOAD LOGIC ---
+// --- IMAGE UPLOAD LOGIC (FIREBASE STORAGE) ---
 const uploadBtn = document.getElementById('uploadBtn');
 const imageUpload = document.getElementById('imageUpload');
 const uploadStatus = document.getElementById('uploadStatus');
@@ -195,69 +196,28 @@ if (uploadBtn && imageUpload) {
         // Show uploading status
         if (uploadStatus) {
             uploadStatus.style.display = 'block';
-            uploadStatus.textContent = "Uploading to Gallery... (Please wait)";
+            uploadStatus.textContent = "Uploading to Firebase Storage... (Please wait)";
             uploadStatus.style.color = "#2196f3"; // Blue for loading
         }
 
-        const formData = new FormData();
-        formData.append('image', file);
-
-        // Helper to fetch with timeout
-        const fetchWithTimeout = async (url, options, timeout = 15000) => {
-            const controller = new AbortController();
-            const id = setTimeout(() => controller.abort(), timeout);
-            try {
-                const response = await fetch(url, { ...options, signal: controller.signal });
-                clearTimeout(id);
-                return response;
-            } catch (error) {
-                clearTimeout(id);
-                throw error;
-            }
-        };
-
         try {
-            // Updated Priority: Try the backup key first as it might be more reliable
-            let apiKeys = [
-                '3cff7299a912e742886f3438ed22c60e', // Key 1
-                '6d207e02198a847aa98d0a2a901485a5', // Key 2
-                'f9c32a7a40232d3e52e464c8d1052609'  // Key 3 (Deep backup)
-            ];
+            // Create a storage reference
+            const fileName = `products/${Date.now()}_${file.name}`;
+            const storageRef = ref(storage, fileName);
 
-            let result = null;
-            let success = false;
+            // Upload the file
+            const snapshot = await uploadBytes(storageRef, file);
+            console.log('Uploaded a blob or file!');
 
-            // Try keys sequentially
-            for (let getKey of apiKeys) {
-                try {
-                    console.log("Trying upload with key: " + getKey.substring(0, 5) + "...");
-                    let response = await fetchWithTimeout(`https://api.imgbb.com/1/upload?key=${getKey}`, {
-                        method: 'POST',
-                        body: formData
-                    });
+            // Get the download URL
+            const downloadURL = await getDownloadURL(snapshot.ref);
 
-                    let data = await response.json();
-                    if (data.success) {
-                        result = data;
-                        success = true;
-                        break; // Stop loop if successful
-                    }
-                } catch (innerErr) {
-                    console.warn("Key failed or timed out:", innerErr);
-                    // Continue to next key
-                }
-            }
+            if (pImage) pImage.value = downloadURL;
 
-            if (success && result) {
-                const directUrl = result.data.url;
-                if (pImage) pImage.value = directUrl;
-                showToast("Image uploaded successfully!", "success");
-                if (uploadStatus) {
-                    uploadStatus.textContent = "✓ Upload Complete";
-                    uploadStatus.style.color = "#25D366";
-                }
-            } else {
-                throw new Error("All upload keys failed. Please try a different image or check internet.");
+            showToast("Image uploaded successfully!", "success");
+            if (uploadStatus) {
+                uploadStatus.textContent = "✓ Upload Complete";
+                uploadStatus.style.color = "#25D366";
             }
         } catch (err) {
             console.error("Upload error:", err);
@@ -347,7 +307,7 @@ async function loadProducts() {
                 </p>
                 <div style="display: flex; gap: 10px; margin-top: 10px;">
                     <button class="toggle-stock-btn" data-id="${id}" data-status="${inStock}" 
-                        style="background: #333; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; flex: 1;">
+                        style="background: rgba(255, 255, 255, 0.1); color: ${inStock ? '#aaa' : 'white'}; border: 1px solid #444; padding: 5px 10px; border-radius: 4px; cursor: pointer; flex: 1;">
                         ${inStock ? 'Mark Out of Stock' : 'Mark In Stock'}
                     </button>
                     <button class="delete-btn" data-id="${id}" style="flex: 1;">Remove</button>
@@ -428,21 +388,21 @@ async function loadOrders() {
 
                 div.innerHTML = `
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <span style="font-weight: bold; color: #121212; font-size: 1.1rem;">${order.customerName}</span>
-                        <span style="font-size: 0.8rem; color: #999;">${date}</span>
+                        <span style="font-weight: bold; color: white; font-size: 1.1rem;">${order.customerName}</span>
+                        <span style="font-size: 0.8rem; color: #888;">${date}</span>
                     </div>
-                    <p style="margin-bottom: 5px;"><strong>Phone:</strong> ${order.customerPhone}</p>
-                    <p style="margin-bottom: 5px;"><strong>Address:</strong> ${order.customerAddress}, ${order.customerCity}</p>
+                    <p style="margin-bottom: 5px; color: #ccc;"><strong>Phone:</strong> ${order.customerPhone}</p>
+                    <p style="margin-bottom: 5px; color: #ccc;"><strong>Address:</strong> ${order.customerAddress}, ${order.customerCity}</p>
                     
-                    <div style="background: #f9f9f9; padding: 12px; border: 1px solid #eee; border-radius: 8px; margin: 15px 0; font-size: 0.95rem; white-space: pre-line; color: #333;">
-                        <strong style="display: block; margin-bottom: 5px; color: #666;">Items:</strong>
+                    <div style="background: rgba(255, 255, 255, 0.05); padding: 12px; border: 1px solid #333; border-radius: 8px; margin: 15px 0; font-size: 0.95rem; white-space: pre-line; color: #ddd;">
+                        <strong style="display: block; margin-bottom: 5px; color: var(--accent);">Items:</strong>
                         ${order.summary}
                     </div>
                     
                     <div style="display: flex; gap: 10px; margin-top: 10px;">
                         ${currentOrderFilter === 'pending' ?
-                        `<button class="complete-order-btn" data-id="${id}" style="background: #4caf50; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; flex: 1; font-weight: 600;">Mark Shipped / Complete</button>` :
-                        `<button class="delete-order-btn" data-id="${id}" style="background: #ff4d4d; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; flex: 1; font-weight: 600;">Delete Permanently</button>`
+                        `<button class="complete-order-btn" data-id="${id}" style="background: linear-gradient(135deg, #25D366, #1ebe57); color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; flex: 1; font-weight: 600;">Mark Shipped / Complete</button>` :
+                        `<button class="delete-order-btn" data-id="${id}" style="background: rgba(255, 77, 77, 0.2); color: #ff4d4d; border: 1px solid #ff4d4d; padding: 10px; border-radius: 6px; cursor: pointer; flex: 1; font-weight: 600;">Delete Permanently</button>`
                     }
                     </div>
                 `;
@@ -485,8 +445,8 @@ function attachOrderListeners() {
 if (btnPending) {
     btnPending.onclick = () => {
         currentOrderFilter = 'pending';
-        btnPending.style.background = '#333'; btnPending.style.color = '#fff';
-        btnCompleted.style.background = '#eee'; btnCompleted.style.color = '#333';
+        btnPending.style.background = '#D4AF37'; btnPending.style.color = '#000';
+        btnCompleted.style.background = 'transparent'; btnCompleted.style.color = '#888';
         loadOrders();
     };
 }
@@ -494,8 +454,8 @@ if (btnPending) {
 if (btnCompleted) {
     btnCompleted.onclick = () => {
         currentOrderFilter = 'completed';
-        btnCompleted.style.background = '#333'; btnCompleted.style.color = '#fff';
-        btnPending.style.background = '#eee'; btnPending.style.color = '#333';
+        btnCompleted.style.background = '#D4AF37'; btnCompleted.style.color = '#000';
+        btnPending.style.background = 'transparent'; btnPending.style.color = '#888';
         loadOrders();
     };
 }

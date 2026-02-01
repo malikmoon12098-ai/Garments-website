@@ -7,21 +7,43 @@
     <title>KHADER | Admin Dashboard</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#121212">
+    <meta name="theme-color" content="#050505">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
+        /* ADMIN PREMIUM THEME */
+        body {
+            background-color: #050505;
+            color: #eee;
+        }
+
         .admin-panel {
-            padding-top: 120px;
+            padding-top: 100px;
             min-height: 100vh;
-            background: #f8f9fa;
         }
 
         .admin-card {
-            background: white;
+            background: rgba(30, 30, 30, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             padding: 2.5rem;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
             margin-bottom: 3rem;
+        }
+
+        h2 {
+            color: var(--accent);
+            font-weight: 300;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        /* Text Muted */
+        p,
+        .admin-card p {
+            color: #aaa;
         }
 
         .form-group {
@@ -31,20 +53,69 @@
         .form-group label {
             display: block;
             margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: #1a1a1a;
+            font-weight: 500;
+            color: #aaa;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
         }
 
         .form-group input,
         .form-group select,
         .form-group textarea {
             width: 100%;
-            padding: 0.8rem;
-            border: 1px solid #ddd;
-            border-radius: 6px;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: white;
             font-family: inherit;
+            transition: var(--transition);
         }
 
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.1);
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        /* BUTTONS */
+        .btn {
+            border-radius: 8px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            transition: var(--transition);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), #b89628);
+            color: black;
+            border: none;
+            font-weight: 700;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+            transform: translateY(-2px);
+            background: linear-gradient(135deg, #e5c14d, #c4a02e);
+            color: black;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid #444;
+            color: #ccc;
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(212, 175, 55, 0.05);
+        }
+
+        /* LIST ITEMS */
         .product-list-admin {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -52,442 +123,144 @@
         }
 
         .admin-item {
-            background: white;
+            background: rgba(255, 255, 255, 0.03);
             padding: 1rem;
-            border-radius: 8px;
-            border: 1px solid #eee;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
             position: relative;
+            transition: var(--transition);
+        }
+
+        .admin-item:hover {
+            transform: translateY(-5px);
+            border-color: rgba(212, 175, 55, 0.3);
+            background: rgba(255, 255, 255, 0.05);
         }
 
         .admin-item img {
             width: 100%;
-            height: 150px;
+            height: 180px;
             object-fit: cover;
-            border-radius: 4px;
-            margin-bottom: 0.5rem;
-        }
-
-        .delete-btn {
-            background: #ff4d4d;
-            color: white;
-            border: none;
-            padding: 0.4rem 0.8rem;
-            border-radius: 4px;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 0.5rem;
-        }
-
-        .status-msg {
-            padding: 1rem;
-            margin-bottom: 1rem;
-            border-radius: 6px;
-            display: none;
-        }
-
-        .success {
-            background: #d4edda;
-            color: #155724;
-            display: block;
-        }
-
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            display: block;
-        }
-
-        /* Toast Notifications */
-        .toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .toast {
-            background: #121212;
-            color: white;
-            padding: 12px 24px;
             border-radius: 8px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 1rem;
+        }
+
+        .admin-item h4 {
+            color: white;
+            margin-bottom: 5px;
+        }
+
+        .admin-item p {
+            color: #888;
             font-size: 0.9rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            animation: toastSlideIn 0.3s ease forwards;
-            min-width: 250px;
-            border-left: 5px solid #4caf50;
         }
 
-        .toast.error {
-            border-left-color: #ff4d4d;
-        }
-
-        .toast.info {
-            border-left-color: #2196f3;
-        }
-
-        @keyframes toastSlideIn {
-            from {
-                opacity: 0;
-                transform: translateX(100%);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        .toast.fade-out {
-            animation: toastFadeOut 0.3s ease forwards;
-        }
-
-        @keyframes toastFadeOut {
-            from {
-                opacity: 1;
-                transform: translateX(0);
-            }
-
-            to {
-                opacity: 0;
-                transform: translateX(100%);
-            }
-        }
-
-        @media (max-width: 900px) {
-            .toast-container {
-                top: auto;
-                bottom: 20px;
-                right: 10px;
-                left: 10px;
-            }
-
-            .toast {
-                min-width: auto;
-                font-size: 0.8rem;
-                padding: 10px 15px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .admin-panel {
-                padding-top: 100px;
-                padding-left: 1rem;
-                padding-right: 1rem;
-            }
-
-            .admin-card {
-                padding: 1.5rem;
-            }
-
-            .grid-two {
-                grid-template-columns: 1fr;
-                gap: 0;
-            }
-
-            input,
-            select,
-            textarea,
-            .btn {
-                font-size: 16px !important;
-                /* Prevents iOS zoom */
-                margin-bottom: 10px;
-            }
-
-            .admin-item {
-                margin-bottom: 1rem;
-            }
-        }
-
-        /* Security PIN Styles */
-        #adminAuthOverlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--primary);
-            z-index: 9999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            text-align: center;
-        }
-
-        .auth-card {
-            background: #1e1e1e;
-            padding: 3rem;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 400px;
-            border: 1px solid #333;
-        }
-
-        .auth-card h2 {
-            margin-bottom: 1rem;
-            font-size: 1.5rem;
-        }
-
-        .auth-card input {
-            width: 100%;
-            padding: 1rem;
-            margin-bottom: 1.5rem;
-            background: #2a2a2a;
-            border: 1px solid #444;
-            color: white;
-            text-align: center;
-            font-size: 1.5rem;
-            letter-spacing: 10px;
-            border-radius: 8px;
-        }
-
-        #adminMainContent {
-            display: none;
-        }
-
-        /* TABBED LAYOUT STYLES */
-        .admin-layout {
-            display: grid;
-            grid-template-columns: 250px 1fr;
-            min-height: 100vh;
-            padding-top: 80px;
-        }
-
+        /* SIDEBAR */
         .admin-sidebar {
-            background: #121212;
-            color: white;
-            padding: 40px 20px;
-            position: sticky;
-            top: 80px;
-            height: calc(100vh - 80px);
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+            background: #000;
+            border-right: 1px solid #222;
         }
 
         .sidebar-btn {
-            background: transparent;
             color: #888;
-            border: none;
-            text-align: left;
-            padding: 15px 20px;
             border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.3s;
+            margin-bottom: 5px;
         }
 
         .sidebar-btn.active {
-            background: #222;
-            color: white;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            background: rgba(212, 175, 55, 0.1);
+            color: var(--accent);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            box-shadow: none;
         }
 
         .sidebar-btn:hover:not(.active) {
             color: white;
-            background: #1a1a1a;
+            background: #111;
         }
 
-        .admin-content-area {
-            padding: 40px;
-            background: #f8f9fa;
+        /* TOAST */
+        .toast {
+            background: rgba(20, 20, 20, 0.95);
+            border: 1px solid #333;
+            backdrop-filter: blur(10px);
+            color: white;
         }
 
-        .admin-section {
-            display: none;
-            animation: sectionFadeIn 0.3s ease;
+        .grid-two {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
         }
 
-        .admin-section.active {
-            display: block;
-        }
-
-        @keyframes sectionFadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
+        /* MOBILE OPTIMIZATIONS */
         @media (max-width: 900px) {
-            :root {
-                --header-height: 50px;
-            }
-
-            html,
-            body {
-                width: 100%;
-                overflow-x: hidden;
-                font-size: 13px;
-                /* Smaller base font */
-            }
-
-            /* Force all containers to stay within bounds */
-            * {
-                box-sizing: border-box;
-                max-width: 100% !important;
-            }
-
-            .container {
-                padding: 0 10px !important;
-            }
-
-            .admin-layout {
-                display: flex !important;
-                flex-direction: column !important;
-                padding-top: var(--header-height) !important;
-                width: 100% !important;
-                overflow-x: hidden !important;
-            }
-
             .admin-sidebar {
-                height: auto !important;
-                position: sticky !important;
-                top: var(--header-height) !important;
-                z-index: 1001 !important;
-                padding: 5px !important;
-                flex-direction: row !important;
-                overflow-x: auto !important;
-                gap: 5px !important;
-                white-space: nowrap !important;
-                background: #121212 !important;
-                border-bottom: 2px solid #333 !important;
-                width: 100% !important;
-                display: flex !important;
-            }
+                background: rgba(10, 10, 10, 0.95);
+                backdrop-filter: blur(10px);
+                border-bottom: 1px solid #222;
+                border-right: none;
 
-            .admin-sidebar hr {
-                display: none !important;
+                /* Horizontal Scroll */
+                display: flex;
+                flex-direction: row;
+                overflow-x: auto;
+                padding: 10px;
+                gap: 10px;
             }
 
             .sidebar-btn {
-                padding: 6px 10px !important;
-                font-size: 0.7rem !important;
-                border-radius: 4px !important;
-                flex-shrink: 0 !important;
+                flex: 0 0 auto;
+                margin: 0;
+                padding: 12px 20px;
+                font-size: 1rem;
+                background: #111;
+                border: 1px solid #333;
+                border-radius: 8px;
             }
 
-            .admin-content-area {
-                padding: 10px 5px !important;
-                width: 100% !important;
-                overflow-x: hidden !important;
-            }
-
-            .admin-card {
-                padding: 0.8rem !important;
-                margin-bottom: 0.8rem !important;
-                width: 100% !important;
-                border-radius: 6px !important;
-                box-shadow: none !important;
-            }
-
-            .admin-card h2 {
-                font-size: 1rem !important;
-                margin-bottom: 0.8rem !important;
-            }
-
-            .admin-card p {
-                font-size: 0.75rem !important;
-                line-height: 1.3 !important;
+            .sidebar-btn.active {
+                background: var(--accent);
+                color: black;
+                font-weight: 700;
             }
 
             .grid-two {
-                grid-template-columns: 1fr !important;
-                gap: 10px !important;
+                grid-template-columns: 1fr;
             }
 
+            /* Increase Sizes */
             .form-group label {
-                font-size: 0.7rem !important;
-                margin-bottom: 2px !important;
+                font-size: 1.1rem;
+                color: #ddd;
             }
 
-            input,
-            textarea,
-            select {
-                padding: 8px !important;
-                font-size: 0.8rem !important;
-                height: auto !important;
+            .form-group input,
+            .form-group select,
+            .form-group textarea {
+                padding: 15px;
+                font-size: 1.1rem;
             }
 
             .btn {
-                padding: 10px !important;
-                font-size: 0.75rem !important;
-                width: 100% !important;
+                padding: 18px 24px;
+                font-size: 1.1rem;
             }
 
-            .product-list-admin {
-                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)) !important;
-                gap: 8px !important;
-            }
-
-            .admin-item {
-                padding: 5px !important;
-            }
-
-            .admin-item img {
-                height: 100px !important;
-            }
-
-            .admin-item h4 {
-                font-size: 0.8rem !important;
-            }
-
-            .admin-item p {
-                font-size: 0.7rem !important;
-            }
-
-            /* Header Tweaks */
-            header.scrolled {
-                height: 50px !important;
-            }
-
-            .brand-logo {
-                height: 35px !important;
-            }
-
-            #activeSessionCount {
-                font-size: 0.65rem !important;
-            }
-
-            #logoutBtn {
-                padding: 3px 8px !important;
-                font-size: 0.65rem !important;
-            }
-
-            /* Responsive Image Input */
             .image-input-group {
-                display: flex !important;
-                flex-direction: column !important;
-                gap: 10px !important;
-            }
-
-            .image-input-group input {
-                width: 100% !important;
+                flex-direction: column;
             }
 
             .image-input-group button {
-                width: 100% !important;
-                padding: 12px !important;
+                width: 100%;
+                margin-top: 5px;
+                padding: 15px;
             }
         }
 
-        /* Desktop default for image input */
         .image-input-group {
             display: flex;
-            gap: 8px;
+            gap: 10px;
         }
 
         .image-input-group input {
@@ -495,11 +268,32 @@
         }
 
         .image-input-group button {
-            width: auto;
-            padding: 0 15px;
-            background: #666;
-            font-size: 0.8rem;
             white-space: nowrap;
+            width: auto;
+            padding: 0 20px;
+        }
+
+        /* AUTH SCREEN */
+        #adminAuthOverlay {
+            background: black;
+        }
+
+        .auth-card {
+            background: #111;
+            border: 1px solid #333;
+            box-shadow: 0 0 50px rgba(212, 175, 55, 0.1);
+        }
+
+        /* UTILS */
+        .delete-btn {
+            background: rgba(255, 77, 77, 0.1);
+            color: #ff4d4d;
+            border: 1px solid rgba(255, 77, 77, 0.2);
+        }
+
+        .delete-btn:hover {
+            background: #ff4d4d;
+            color: white;
         }
     </style>
 </head>
@@ -555,12 +349,12 @@
                 <section id="section-orders" class="admin-section active">
                     <div class="admin-card">
                         <h2>Direct Customer Orders</h2>
-                        <p style="margin-bottom: 2rem; color: #666;">View and manage your recent sales here.</p>
+                        <p style="margin-bottom: 2rem;">View and manage your recent sales here.</p>
                         <div style="display: flex; gap: 10px; margin-bottom: 2rem;">
                             <button id="viewPendingOrders" class="btn"
                                 style="background: #333; color: white;">Pending</button>
                             <button id="viewCompletedOrders" class="btn"
-                                style="background: #eee; color: #333;">Completed</button>
+                                style="background: #111; color: #666; border: 1px solid #333;">Completed</button>
                         </div>
                         <div id="ordersList">
                             <p>Loading orders...</p>
@@ -572,7 +366,7 @@
                 <section id="section-add" class="admin-section">
                     <div class="admin-card">
                         <h2>Add New Product</h2>
-                        <p style="margin-bottom: 2rem; color: #666;">Flash your latest collection to the website.</p>
+                        <p style="margin-bottom: 2rem;">Flash your latest collection to the website.</p>
                         <div id="status" class="status-msg"></div>
                         <form id="addProductForm">
                             <div class="grid-two">
@@ -633,7 +427,7 @@
                 <section id="section-inventory" class="admin-section">
                     <div class="admin-card">
                         <h2>Live Inventory</h2>
-                        <p style="margin-bottom: 2rem; color: #666;">Recently added products are shown here.</p>
+                        <p style="margin-bottom: 2rem;">Recently added products are shown here.</p>
                         <div id="productList" class="product-list-admin">
                             <p>Loading inventory...</p>
                         </div>
@@ -644,7 +438,7 @@
                 <section id="section-settings" class="admin-section">
                     <div class="admin-card">
                         <h2>Manage Store Details</h2>
-                        <p style="margin-bottom: 2rem; color: #666;">These details will be shown on your public
+                        <p style="margin-bottom: 2rem;">These details will be shown on your public
                             "Contact" page.</p>
                         <form id="contactSettingsForm">
                             <div class="grid-two">

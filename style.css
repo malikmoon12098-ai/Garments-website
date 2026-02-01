@@ -1,13 +1,22 @@
 :root {
-    --primary: #121212;
-    --secondary: #F5F5F7;
-    --accent: #8E8E93;
+    --primary: #050505;
+    /* Deep Black */
+    --secondary: #121212;
+    /* Card Background */
+    --accent: #D4AF37;
+    /* Gold */
+    --accent-hover: #b89628;
     --text-white: #FFFFFF;
-    --text-black: #000000;
-    --gray-light: #E5E5EA;
-    --transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    --text-gray: #AAAAAA;
+    --border-color: #333333;
+    --success: #25D366;
+    --danger: #FF4D4D;
+
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --container-width: 1400px;
-    --header-height: 120px;
+    --header-height: 90px;
+    --glass: rgba(18, 18, 18, 0.8);
+    --glass-border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 * {
@@ -18,8 +27,8 @@
 
 body {
     font-family: 'Inter', sans-serif;
-    background-color: var(--secondary);
-    color: var(--text-black);
+    background-color: var(--primary);
+    color: var(--text-white);
     line-height: 1.6;
     overflow-x: hidden;
 }
