@@ -254,7 +254,9 @@ async function handleAutoOrder(text) {
         // 1. Find Owner
         let ownerCode = await getOwnerCode();
         if (!ownerCode) {
-            showToast("Error: Store ID not found in settings.");
+            console.error("Owner Code not found in settings/contact");
+            showToast("Setup Required: Please go to Admin Panel -> Settings and enter your Store U-CHAT ID.");
+            showScreen('home'); // Ensure they at least see the home screen
             return;
         }
         ownerCode = ownerCode.trim().toUpperCase();
