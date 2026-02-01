@@ -400,14 +400,34 @@ async function triggerAIResponse(chatId, customerMsg) {
                 finalResponse = `${customReply}\n\nAbhi apka order process mein hai. Please apni details send kar den takay hum agay barh saken.`;
             } else {
                 // Update temporary data based on message content
-                if (!finalOrderData.name && customerMsg.split(' ').length <= 3 && !customerMsg.match(/\d/)) {
+                const msgLower = customerMsg.toLowerCase();
+
+                // 1. Better Phone Detection (10-13 digits)
+                const phoneMatch = customerMsg.match(/\d{10,13}/);
+                if (phoneMatch && !finalOrderData.phone) {
+                    finalOrderData.phone = phoneMatch[0];
+                }
+
+                // 2. Better Name Detection (Short string, no numbers, not keywords)
+                const words = customerMsg.split(/\s+/);
+                if (!finalOrderData.name && !customerMsg.match(/\d/) && words.length <= 4) {
                     finalOrderData.name = customerMsg.trim();
-                } else if (!finalOrderData.phone && customerMsg.match(/\d{10,13}/)) {
-                    finalOrderData.phone = customerMsg.match(/\d{10,13}/)[0];
-                } else if (!finalOrderData.city && (customerMsg.toLowerCase().includes("city") || customerMsg.toLowerCase().includes("sheher"))) {
-                    finalOrderData.city = customerMsg.replace(/city|sheher|city:|sheher:/gi, "").trim();
-                } else if (!finalOrderData.address) {
-                    finalOrderData.address = customerMsg.trim();
+                }
+
+                // 3. Better City Detection
+                if (!finalOrderData.city) {
+                    if (msgLower.includes("city:") || msgLower.includes("sheher:")) {
+                        finalOrderData.city = customerMsg.split(/city:|sheher:/i)[1].trim();
+                    } else if (msgLower.includes("city") || msgLower.includes("sheher")) {
+                        finalOrderData.city = customerMsg.split(/city|sheher/i)[1].trim();
+                    }
+                }
+
+                // 4. Address Detection (Longer strings or anything remaining if name/phone/city found)
+                if (!finalOrderData.address && (customerMsg.length > 15 || (finalOrderData.name && finalOrderData.phone && customerMsg.length > 5))) {
+                    if (!customerMsg.includes(finalOrderData.phone || "---") && !customerMsg.includes(finalOrderData.name || "---")) {
+                        finalOrderData.address = customerMsg.trim();
+                    }
                 }
 
                 // Check what's still missing
@@ -418,7 +438,7 @@ async function triggerAIResponse(chatId, customerMsg) {
                 if (!finalOrderData.city) missing.push("4. City");
 
                 if (missing.length > 0) {
-                    finalResponse = `Shukriya! Apki di hui details save kar li hain.\n\nLekin abhi ye cheezen rehti hain:\n${missing.join('\n')}\n\nBarah-e-karam baki details bhi bhej den.`;
+                    finalResponse = `Shukriya! Apki di hui details save kar li hain.\n\nLekin abhi ye cheezen rehti hain:\n${missing.join('\n')}\n\nBarah-e-karam baki details bhi bhej den takay hum order finalize kar saken.`;
                     newState = "ORDER_COLLECTING";
                 } else {
                     // Everything collected!
