@@ -1,3 +1,11 @@
+// Help prevent XSS
+function escapeHTML(str) {
+    if (!str) return "";
+    const p = document.createElement('p');
+    p.textContent = str;
+    return p.innerHTML;
+}
+
 // DOM Elements
 const app = document.getElementById('app');
 // Screens
@@ -378,39 +386,65 @@ async function triggerAIResponse(chatId, customerMsg) {
         // 1. Detect Buy Now Start
         if (customerMsg.includes("BUY_NOW:")) {
             const productInfo = customerMsg.replace("BUY_NOW:", "").trim();
-            finalResponse = `Asalam-o-Alaikum! Khader Garments me khushamdeed. 🌟\n\nApka order start ho gaya hai: *${productInfo}*\n\nBarah-e-karam apna order confirm karne ke liye ye details bhej den:\n1. Name\n2. Phone Number\n3. Address\n4. City`;
+            finalResponse = `Asalam-o-Alaikum! Khader Garments me khushamdeed. 🌟\n\nApka order start ho gaya hai: *${productInfo}*\n\nBarah-e-karam apna order confirm karne ke liye ye 4 details bhej den:\n1. Name\n2. Phone Number\n3. Address\n4. City`;
             newState = "ORDER_COLLECTING";
-            finalOrderData = { product: productInfo };
+            finalOrderData = {
+                product: productInfo,
+                name: null, phone: null, address: null, city: null
+            };
         }
         // 2. Handle Order States
         else if (currentState === "ORDER_COLLECTING") {
-            // Check if it's a question first
             const customReply = getCustomBotReply(customerMsg);
             if (customReply) {
-                finalResponse = `${customReply}\n\nAbhi apka order process mein hai. Please apni details (Name, Phone, Address, City) send kar den takay hum agay barh saken.`;
+                finalResponse = `${customReply}\n\nAbhi apka order process mein hai. Please apni details send kar den takay hum agay barh saken.`;
             } else {
-                // Assume it's details
-                finalResponse = `Shukriya! Apka order summary ye hai:\n\n📦 *Product:* ${finalOrderData.product}\n📝 *Details:* ${customerMsg}\n\nKia ye details sahi hain? Agar sahi hain to barah-e-karam niche **"CONFIRM"** likh kar bhej den takay apka order confirm ho jaye.`;
-                newState = "ORDER_CONFIRMING";
-                finalOrderData.details = customerMsg;
+                // Update temporary data based on message content
+                if (!finalOrderData.name && customerMsg.split(' ').length <= 3 && !customerMsg.match(/\d/)) {
+                    finalOrderData.name = customerMsg.trim();
+                } else if (!finalOrderData.phone && customerMsg.match(/\d{10,13}/)) {
+                    finalOrderData.phone = customerMsg.match(/\d{10,13}/)[0];
+                } else if (!finalOrderData.city && (customerMsg.toLowerCase().includes("city") || customerMsg.toLowerCase().includes("sheher"))) {
+                    finalOrderData.city = customerMsg.replace(/city|sheher|city:|sheher:/gi, "").trim();
+                } else if (!finalOrderData.address) {
+                    finalOrderData.address = customerMsg.trim();
+                }
+
+                // Check what's still missing
+                let missing = [];
+                if (!finalOrderData.name) missing.push("1. Name");
+                if (!finalOrderData.phone) missing.push("2. Phone Number");
+                if (!finalOrderData.address) missing.push("3. Address");
+                if (!finalOrderData.city) missing.push("4. City");
+
+                if (missing.length > 0) {
+                    finalResponse = `Shukriya! Apki di hui details save kar li hain.\n\nLekin abhi ye cheezen rehti hain:\n${missing.join('\n')}\n\nBarah-e-karam baki details bhi bhej den.`;
+                    newState = "ORDER_COLLECTING";
+                } else {
+                    // Everything collected!
+                    finalResponse = `Zabardast! Sari details mil gayi hain:\n\n👤 *Name:* ${finalOrderData.name}\n📞 *Phone:* ${finalOrderData.phone}\n📍 *Address:* ${finalOrderData.address}\n🏙️ *City:* ${finalOrderData.city}\n📦 *Product:* ${finalOrderData.product}\n\nKia ye sab sahi hai? Agar sahi hai to niche **"CONFIRM"** likh den.`;
+                    newState = "ORDER_CONFIRMING";
+                }
             }
         }
         else if (currentState === "ORDER_CONFIRMING") {
             if (customerMsg.trim().toUpperCase() === "CONFIRM") {
                 // FINALIZE ORDER
                 try {
+                    const summaryText = `*AI Bot Order*\n- Product: ${finalOrderData.product}\n- Name: ${finalOrderData.name}\n- Phone: ${finalOrderData.phone}\n- Address: ${finalOrderData.address}\n- City: ${finalOrderData.city}`;
                     const orderData = {
-                        customerName: finalOrderData.details.split('\n')[0] || "U-CHAT Customer",
-                        customerPhone: "Chat ID: " + myUserCode,
-                        customerAddress: finalOrderData.details,
-                        customerCity: "Check Message",
-                        summary: `*AI Bot Order*\n- ${finalOrderData.product}\n- Details provided: ${finalOrderData.details}`,
-                        totalPrice: 0, // Admin will handle actual total
+                        customerName: finalOrderData.name,
+                        customerPhone: finalOrderData.phone,
+                        customerAddress: finalOrderData.address,
+                        customerCity: finalOrderData.city,
+                        customerCode: "Chat: " + myUserCode,
+                        summary: summaryText,
+                        totalPrice: 0,
                         status: 'pending',
                         timestamp: firebase.firestore.FieldValue.serverTimestamp()
                     };
                     await db.collection('orders').add(orderData);
-                    finalResponse = "Mubarak ho! 🎉 Apka order confirm ho gaya hai aur hamare admin ko mil gaya hai. Ham jald hi apse mazeed raabta karenge. Shukriya!";
+                    finalResponse = "Mubarak ho! 🎉 Apka order confirm ho gaya hai. Hum jald hi apse mazeed raabta karenge. Shukriya!";
                     newState = null;
                     finalOrderData = null;
                 } catch (err) {
@@ -422,7 +456,7 @@ async function triggerAIResponse(chatId, customerMsg) {
                 if (customReply) {
                     finalResponse = `${customReply}\n\nOrder confirm karne ke liye bas **"CONFIRM"** likhen.`;
                 } else {
-                    finalResponse = "Please order confirm karne ke liye niche **CONFIRM** likh kar bhej den, ya agar kuch aur puchna chahte hain to puchen.";
+                    finalResponse = "Please order confirm karne ke liye niche **CONFIRM** likh kar bhej den.";
                 }
             }
         }
@@ -548,20 +582,20 @@ async function saveOrderToFirestore(chatId, summary) {
     }
 }
 
-// Auto-Delete Old Messages (1 week)
+// Auto-Delete Old Messages (24 hours)
 async function cleanupOldMessages() {
     if (isDemoMode) return; // Skip in demo mode
 
-    // Throttle: Only run once per day
+    // Throttle: Only run once per hour (to be more responsive to 24h limit)
     const lastCleanup = localStorage.getItem('uchat_last_cleanup');
     const now = Date.now();
-    if (lastCleanup && (now - parseInt(lastCleanup)) < 24 * 60 * 60 * 1000) {
-        console.log("Cleanup skipped (ran < 24h ago)");
+    if (lastCleanup && (now - parseInt(lastCleanup)) < 1 * 60 * 60 * 1000) {
+        console.log("Cleanup skipped (ran < 1h ago)");
         return;
     }
 
     console.log("Running message cleanup...");
-    const cutoffTime = now - (7 * 24 * 60 * 60 * 1000); // 7 days ago
+    const cutoffTime = now - (24 * 60 * 60 * 1000); // 24 hours ago
 
     try {
         // Get all chats user is part of
@@ -1183,7 +1217,7 @@ function appendMessage(text, isMe, timestamp, messageDocId, chatId) {
     }
 
     div.innerHTML = `
-        ${text}
+        ${escapeHTML(text)}
         <span class="msg-time">${timeStr}</span>
     `;
 

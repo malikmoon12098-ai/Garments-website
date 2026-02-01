@@ -1,3 +1,11 @@
+// Help prevent XSS
+function escapeHTML(str) {
+    if (!str) return "";
+    const p = document.createElement('p');
+    p.textContent = str;
+    return p.innerHTML;
+}
+
 import { db } from './firebase-config.js';
 import { collection, getDocs, query } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -50,7 +58,7 @@ function setupCategoryDropdown() {
 
     // Populate select options
     categoryFilter.innerHTML = `<option value="All">All Categories</option>` +
-        categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+        categories.map(cat => `<option value="${escapeHTML(cat)}">${escapeHTML(cat)}</option>`).join('');
 
     // Add change event
     categoryFilter.addEventListener('change', (e) => {
@@ -89,12 +97,12 @@ function renderProducts() {
             <a href="product.html?id=${p.id}" style="text-decoration: none; color: inherit;">
                 <div class="product-img">
                     ${isOutOfStock ? '<div class="out-of-stock-badge">SOLD OUT</div>' : ''}
-                    <img src="${p.image}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/400x500'" 
+                    <img src="${p.image}" alt="${escapeHTML(p.name)}" onerror="this.src='https://via.placeholder.com/400x500'" 
                          style="${isOutOfStock ? 'filter: grayscale(100%); opacity: 0.7;' : ''}">
                 </div>
                 <div class="product-info">
-                    <span class="category">${p.category}</span>
-                    <h3 class="name">${p.name}</h3>
+                    <span class="category">${escapeHTML(p.category)}</span>
+                    <h3 class="name">${escapeHTML(p.name)}</h3>
                     <span class="price">Rs. ${parseFloat(p.price).toLocaleString()}</span>
                 </div>
             </a>

@@ -1,3 +1,11 @@
+// Help prevent XSS
+function escapeHTML(str) {
+    if (!str) return "";
+    const p = document.createElement('p');
+    p.textContent = str;
+    return p.innerHTML;
+}
+
 import { db, storage } from './firebase-config.js';
 import { collection, addDoc, getDocs, deleteDoc, doc, serverTimestamp, query, setDoc, getDoc, updateDoc, onSnapshot, where, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
@@ -324,9 +332,9 @@ async function loadProducts() {
             div.className = 'admin-item';
             div.innerHTML = `
                 <img src="${product.image}" onerror="this.src='https://via.placeholder.com/150'">
-                <h4>${product.name}</h4>
+                <h4>${escapeHTML(product.name)}</h4>
                 <p>
-                    ${product.category} - Rs. ${parseFloat(product.price).toLocaleString()} <br>
+                    ${escapeHTML(product.category)} - Rs. ${parseFloat(product.price).toLocaleString()} <br>
                     <span style="font-weight: bold; color: ${inStock ? 'green' : 'red'};">
                         ${inStock ? '● In Stock' : '● Out of Stock'}
                     </span>
@@ -414,15 +422,15 @@ async function loadOrders() {
 
                 div.innerHTML = `
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <span style="font-weight: bold; color: white; font-size: 1.1rem;">${order.customerName}</span>
+                        <span style="font-weight: bold; color: white; font-size: 1.1rem;">${escapeHTML(order.customerName)}</span>
                         <span style="font-size: 0.8rem; color: #888;">${date}</span>
                     </div>
-                    <p style="margin-bottom: 5px; color: #ccc;"><strong>Phone:</strong> ${order.customerPhone}</p>
-                    <p style="margin-bottom: 5px; color: #ccc;"><strong>Address:</strong> ${order.customerAddress}, ${order.customerCity}</p>
+                    <p style="margin-bottom: 5px; color: #ccc;"><strong>Phone:</strong> ${escapeHTML(order.customerPhone)}</p>
+                    <p style="margin-bottom: 5px; color: #ccc;"><strong>Address:</strong> ${escapeHTML(order.customerAddress)}, ${escapeHTML(order.customerCity)}</p>
                     
                     <div style="background: rgba(255, 255, 255, 0.05); padding: 12px; border: 1px solid #333; border-radius: 8px; margin: 15px 0; font-size: 0.95rem; white-space: pre-line; color: #ddd;">
                         <strong style="display: block; margin-bottom: 5px; color: var(--admin-accent);">Items:</strong>
-                        ${order.summary}
+                        ${escapeHTML(order.summary)}
                     </div>
                     
                     <div style="display: flex; gap: 10px; margin-top: 10px;">
