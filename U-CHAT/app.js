@@ -318,8 +318,8 @@ async function handleAutoOrder(text) {
         // 3. Switch to Chat Screen
         openChat(chatId, ownerData.firstName + " " + ownerData.lastName, ownerId);
 
-        // 4. Trigger AI
-        setTimeout(() => triggerAIResponse(chatId, "NEW_ORDER_START"), 1500);
+        // 4. Trigger AI (Pass the actual message so it detects BUY_NOW)
+        setTimeout(() => triggerAIResponse(chatId, text), 1000);
 
     } catch (e) {
         console.error("Auto-order fail:", e);
@@ -438,7 +438,10 @@ async function triggerAIResponse(chatId, customerMsg) {
                 let history = [];
                 msgsSnapshot.forEach(doc => history.push(doc.data()));
                 history.sort((a, b) => (a.timestamp?.toMillis?.() || 0) - (b.timestamp?.toMillis?.() || 0));
-                finalResponse = await askAI(customerMsg, history);
+
+                // Fetch live inventory to guide the AI
+                const inventory = await getInventorySummary();
+                finalResponse = await askAI(customerMsg, history, inventory);
             }
         }
 
@@ -480,18 +483,39 @@ async function triggerAIResponse(chatId, customerMsg) {
     }
 }
 
-async function askAI(message, history) {
+async function getInventorySummary() {
+    try {
+        const snap = await db.collection('products').limit(30).get();
+        let list = [];
+        snap.forEach(doc => {
+            const p = doc.data();
+            if (p.inStock !== false) {
+                list.push(`${p.name} (Rs. ${p.price})`);
+            }
+        });
+        return list.length > 0 ? list.join(', ') : "No products in stock right now.";
+    } catch (e) {
+        return "Unable to fetch inventory.";
+    }
+}
+
+async function askAI(message, history, inventory = "") {
     const prompt = `You are a professional sales assistant for "KHADER Garments Store".
     
-    Response Rules:
-    - Keep it short and polite.
-    - If asked about prices, say "Please check our Shop section."
-    - Answer based on the chat history.
+    Our Current Inventory:
+    ${inventory}
     
-    History:
+    Response Rules:
+    - Language: Roman Urdu / Urdu (unless customer speaks English).
+    - Be polite and helpful.
+    - Mention specific items from our inventory if relevant.
+    - If asked about prices, use the ones from the inventory list above.
+    
+    Context History:
     ${history.map(m => (m.senderId === myUserId ? "Customer: " : "Store: ") + m.text).join('\n')}
     
-    Response:`;
+    User Message: ${message}
+    AI Response:`;
 
     try {
         const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
