@@ -332,15 +332,22 @@ const CUSTOM_BOT_RULES = {
     "hello": "Asalam-o-Alaikum! Welcome to Khader Garments. Mai ap ki kia madad kar sakta hun?",
     "hi": "Hi! Welcome to Khader Garments.",
     "salam": "Walaikum Assalam! Khader Garments me khushamdeed.",
-    "price": "Hamari prices bohot munasib hen. Ap kon se item ki price maloom karna chahte hen?",
-    "address": "Hamari shop ka address he: Shop #123, Garments Market, Karachi.",
-    "location": "Hamari shop ka address he: Shop #123, Garments Market, Karachi.",
-    "contact": "Ap hamen call kar sakte hen: 0300-1234567",
+    "price": "Hamari prices bohot munasib hen. Ap ko product details mein price nazar aa jayegi.",
+    "address": "Hamari shop Karachi mein hai (Market #123). Online delivery poore Pakistan mein available hai.",
+    "location": "Hamari shop Karachi mein hai (Market #123). Online delivery poore Pakistan mein available hai.",
+    "contact": "Ap hamen WhatsApp kar sakte hen: 0300-1234567",
     "number": "0300-1234567",
-    "thank": "Shukriya! Ap ka din acha guzre.",
-    "kab aega": "Delivery time aam tor par 2-3 din hota he.",
-    "help": "Mai ap ki ye madad kar sakta hun:\n1. Price list\n2. Address\n3. Order status",
-    "bye": "Allah Hafiz! Phir milenge."
+    "thank": "Shukriya! Hamari koshish hoti hai ke ap ko behtareen quality mile.",
+    "kab aega": "Delivery time aam tor par 2-3 din hota hai.",
+    "delivery": "Hum poore Pakistan mein 2-3 din mein delivery karte hain. Cash on Delivery (COD) available hai.",
+    "kapra": "Hum sirf high-quality fabric use karte hain jo dhone ke baad bhi kharab nahi hota. 100% guarantee!",
+    "quality": "Hamari quality premium hai. Ap ko kapra aur stitching bohot pasand ayegi.",
+    "return": "Agar koi masla ho to ap 7 din ke andar exchange kar sakte hain.",
+    "exchange": "Ji bilkul, size ka issue ho to hum exchange kar dete hain.",
+    "cod": "Ji han, Cash on Delivery available hai. Ap paise tab den jab suit apke hath mein ho.",
+    "cash on delivery": "Ji han, Cash on Delivery available hai.",
+    "help": "Mai ap ki ye madad kar sakta hun:\n1. Order kaise karen?\n2. Kapra aur Quality\n3. Delivery info",
+    "bye": "Allah Hafiz! Umeed hai ap jald hamare regular customer banenge."
 };
 
 function getCustomBotReply(message) {
@@ -360,35 +367,86 @@ async function triggerAIResponse(chatId, customerMsg) {
     console.log("AI Triggered for:", customerMsg);
 
     try {
-        // 1. Check CUSTOM RULES First (Free & Fast)
-        const customReply = getCustomBotReply(customerMsg);
+        const chatRef = db.collection('chats').doc(chatId);
+        const chatSnap = await chatRef.get();
+        const chatData = chatSnap.data() || {};
+        const currentState = chatData.orderState || null;
+        let finalResponse = null;
+        let newState = currentState;
+        let finalOrderData = chatData.tempOrderData || null;
 
-        // 2. Determine Response (Custom OR Gemini)
-        let finalResponse = customReply;
+        // 1. Detect Buy Now Start
+        if (customerMsg.includes("BUY_NOW:")) {
+            const productInfo = customerMsg.replace("BUY_NOW:", "").trim();
+            finalResponse = `Asalam-o-Alaikum! Khader Garments me khushamdeed. 🌟\n\nApka order start ho gaya hai: *${productInfo}*\n\nBarah-e-karam apna order confirm karne ke liye ye details bhej den:\n1. Name\n2. Phone Number\n3. Address\n4. City`;
+            newState = "ORDER_COLLECTING";
+            finalOrderData = { product: productInfo };
+        }
+        // 2. Handle Order States
+        else if (currentState === "ORDER_COLLECTING") {
+            // Check if it's a question first
+            const customReply = getCustomBotReply(customerMsg);
+            if (customReply) {
+                finalResponse = `${customReply}\n\nAbhi apka order process mein hai. Please apni details (Name, Phone, Address, City) send kar den takay hum agay barh saken.`;
+            } else {
+                // Assume it's details
+                finalResponse = `Shukriya! Apka order summary ye hai:\n\n📦 *Product:* ${finalOrderData.product}\n📝 *Details:* ${customerMsg}\n\nKia ye details sahi hain? Agar sahi hain to barah-e-karam niche **"CONFIRM"** likh kar bhej den takay apka order confirm ho jaye.`;
+                newState = "ORDER_CONFIRMING";
+                finalOrderData.details = customerMsg;
+            }
+        }
+        else if (currentState === "ORDER_CONFIRMING") {
+            if (customerMsg.trim().toUpperCase() === "CONFIRM") {
+                // FINALIZE ORDER
+                try {
+                    const orderData = {
+                        customerName: finalOrderData.details.split('\n')[0] || "U-CHAT Customer",
+                        customerPhone: "Chat ID: " + myUserCode,
+                        customerAddress: finalOrderData.details,
+                        customerCity: "Check Message",
+                        summary: `*AI Bot Order*\n- ${finalOrderData.product}\n- Details provided: ${finalOrderData.details}`,
+                        totalPrice: 0, // Admin will handle actual total
+                        status: 'pending',
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    };
+                    await db.collection('orders').add(orderData);
+                    finalResponse = "Mubarak ho! 🎉 Apka order confirm ho gaya hai aur hamare admin ko mil gaya hai. Ham jald hi apse mazeed raabta karenge. Shukriya!";
+                    newState = null;
+                    finalOrderData = null;
+                } catch (err) {
+                    console.error("Order Save Error", err);
+                    finalResponse = "Maazrat, order save karne mein masla hua. Ap barah-e-karam Shop Owner se direct rabta kar len.";
+                }
+            } else {
+                const customReply = getCustomBotReply(customerMsg);
+                if (customReply) {
+                    finalResponse = `${customReply}\n\nOrder confirm karne ke liye bas **"CONFIRM"** likhen.`;
+                } else {
+                    finalResponse = "Please order confirm karne ke liye niche **CONFIRM** likh kar bhej den, ya agar kuch aur puchna chahte hain to puchen.";
+                }
+            }
+        }
+
+        // 3. General Bot Logic (If not in order flow or no specific response yet)
+        if (!finalResponse) {
+            finalResponse = getCustomBotReply(customerMsg);
+        }
 
         if (!finalResponse) {
-            // Only call Gemini if we have a valid key AND no custom rule matched
             if (GEMINI_API_KEY && GEMINI_API_KEY !== "REPLACE_WITH_YOUR_GEMINI_KEY" && GEMINI_API_KEY.length > 20) {
-                // Fetch history for context
-                const msgsSnapshot = await db.collection('chats').doc(chatId).collection('messages')
-                    .limit(20).get();
+                const msgsSnapshot = await db.collection('chats').doc(chatId).collection('messages').limit(10).get();
                 let history = [];
                 msgsSnapshot.forEach(doc => history.push(doc.data()));
-                // Sort
                 history.sort((a, b) => (a.timestamp?.toMillis?.() || 0) - (b.timestamp?.toMillis?.() || 0));
-
                 finalResponse = await askAI(customerMsg, history);
             }
         }
 
-        // 3. Fallback (If no match found)
         if (!finalResponse) {
             finalResponse = "Maazrat, mujhy is sawal ka jawab nahi maloom. 🤖\n\nAp barah-e-karam Shop Owner se direct baat kar len:\n👉 https://wa.me/923001234567";
         }
 
-        if (!finalResponse) return; // Should not happen with fallback, but safe check
-
-        // 4. Find Owner to send as
+        // 4. Update Chat State & Send Message
         let ownerCode = await getOwnerCode();
         if (!ownerCode) return;
         ownerCode = ownerCode.trim().toUpperCase();
@@ -397,7 +455,6 @@ async function triggerAIResponse(chatId, customerMsg) {
         if (snapshot.empty) return;
         const ownerId = snapshot.docs[0].id;
 
-        // 4. Send Response
         const batch = db.batch();
         const msgRef = db.collection('chats').doc(chatId).collection('messages').doc();
         batch.set(msgRef, {
@@ -405,21 +462,18 @@ async function triggerAIResponse(chatId, customerMsg) {
             text: finalResponse,
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
         });
-        const chatRef = db.collection('chats').doc(chatId);
+
+        // Update Metadata + State
         batch.update(chatRef, {
             lastMessage: finalResponse,
             lastMessageTime: firebase.firestore.FieldValue.serverTimestamp(),
-            lastSenderId: ownerId
+            lastSenderId: ownerId,
+            orderState: newState,
+            tempOrderData: finalOrderData
         });
-        await batch.commit();
-        console.log("Auto-Reply Sent:", finalResponse);
-        showToast("Bot replied to customer.");
 
-        // Detect PWA Prompt
-        const pwaPrompt = document.getElementById('pwa-prompt-banner');
-        if (pwaPrompt && finalResponse.includes("CONFIRM")) {
-            pwaPrompt.style.display = 'flex';
-        }
+        await batch.commit();
+        console.log("Bot Response Sent - State:", newState);
 
     } catch (e) {
         console.error("AI Trigger Error", e);

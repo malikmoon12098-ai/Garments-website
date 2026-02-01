@@ -80,10 +80,16 @@ const closeModal = document.getElementById('closeModal');
 const directOrderForm = document.getElementById('directOrderForm');
 const orderSuccessDiv = document.getElementById('orderSuccess');
 
-if (checkoutBtn && orderModal) {
+if (checkoutBtn) {
     checkoutBtn.addEventListener('click', () => {
         if (cart.length === 0) return alert("Cart is empty!");
-        orderModal.style.display = 'flex';
+
+        // Generate Summary for AI
+        let itemsStr = cart.map(item => item.name).join(', ');
+        let total = cart.reduce((sum, item) => sum + parseFloat(item.price), 0);
+
+        const msg = `BUY_NOW: ${itemsStr} - Total Rs. ${total.toLocaleString()}`;
+        window.location.href = `U-CHAT/index.html?orderText=${encodeURIComponent(msg)}`;
     });
 }
 

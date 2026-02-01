@@ -91,9 +91,11 @@ const closeModal = document.getElementById('closeModal');
 const directOrderForm = document.getElementById('directOrderForm');
 const orderSuccessDiv = document.getElementById('orderSuccess');
 
-if (buyBtn && orderModal) {
+if (buyBtn) {
     buyBtn.addEventListener('click', () => {
-        orderModal.style.display = 'flex';
+        if (!currentProduct) return;
+        const msg = `BUY_NOW: ${currentProduct.name} - Rs. ${currentProduct.price}`;
+        window.location.href = `U-CHAT/index.html?orderText=${encodeURIComponent(msg)}`;
     });
 }
 
