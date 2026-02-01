@@ -183,9 +183,9 @@ async function init() {
     myUserId = getStoredUserId();
     console.log("UCHAT Init - ID:", myUserId, "Order:", !!orderText);
 
-    // 2. Handle First-Time Guest arriving with an order
-    if (!myUserId && orderText) {
-        showToast("Starting Guest Session...");
+    // 2. Handle First-Time User: Auto-Create Guest
+    if (!myUserId) {
+        console.log("No account found. Creating automatic guest account...");
         const guestCode = "G-" + Math.floor(100000 + Math.random() * 900000);
         try {
             const userRef = db.collection('users').doc();
@@ -193,7 +193,7 @@ async function init() {
                 userId: userRef.id,
                 firstName: "Guest",
                 lastName: "User",
-                description: "Customer from Shop",
+                description: "Customer",
                 userCode: guestCode,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             };
@@ -207,10 +207,11 @@ async function init() {
             myUserId = userRef.id;
             myUserCode = guestCode;
             myName = "Guest User";
-            console.log("Guest Registered:", myUserId);
+            console.log("Auto-Guest Registered:", myUserId);
         } catch (e) {
-            console.error("Guest registration failed", e);
-            showToast("Login error. Please try again.");
+            console.error("Auto-Guest registration failed:", e);
+            showToast("Login error. Please check internet.");
+            showScreen('welcome');
             return;
         }
     }
@@ -231,16 +232,16 @@ async function init() {
             } catch (e) { console.error("Session Repair Failed", e); }
         }
 
-        showScreen('home');
+        // We jump straight to chat with owner, bypassing Home
         loadUserProfile();
         listenToChats();
         updatePresence(true);
         cleanupOldMessages();
 
-        if (orderText) {
-            // Give Firebase a moment to sync the message listener before opening
-            setTimeout(() => handleAutoOrder(orderText), 500);
-        }
+        // Direct AI Chat Open
+        const textToSource = orderText || "Hi! I need help.";
+        setTimeout(() => handleAutoOrder(textToSource), 500);
+
     } else {
         showScreen('welcome');
     }
@@ -324,106 +325,113 @@ async function handleAutoOrder(text) {
     }
 }
 
+// --- CUSTOM AI BRAIN (Rule-Based) ---
+const CUSTOM_BOT_RULES = {
+    "hello": "Asalam-o-Alaikum! Welcome to Khader Garments. Mai ap ki kia madad kar sakta hun?",
+    "hi": "Hi! Welcome to Khader Garments.",
+    "salam": "Walaikum Assalam! Khader Garments me khushamdeed.",
+    "price": "Hamari prices bohot munasib hen. Ap kon se item ki price maloom karna chahte hen?",
+    "address": "Hamari shop ka address he: Shop #123, Garments Market, Karachi.",
+    "location": "Hamari shop ka address he: Shop #123, Garments Market, Karachi.",
+    "contact": "Ap hamen call kar sakte hen: 0300-1234567",
+    "number": "0300-1234567",
+    "thank": "Shukriya! Ap ka din acha guzre.",
+    "kab aega": "Delivery time aam tor par 2-3 din hota he.",
+    "help": "Mai ap ki ye madad kar sakta hun:\n1. Price list\n2. Address\n3. Order status",
+    "bye": "Allah Hafiz! Phir milenge."
+};
+
+function getCustomBotReply(message) {
+    const lowerMsg = message.toLowerCase();
+
+    // Check for exact keyword matches
+    for (const [key, reply] of Object.entries(CUSTOM_BOT_RULES)) {
+        if (lowerMsg.includes(key)) {
+            return reply;
+        }
+    }
+    return null; // No custom rule found
+}
+
 // AI & Order Automation
 async function triggerAIResponse(chatId, customerMsg) {
-    if (GEMINI_API_KEY === "REPLACE_WITH_YOUR_GEMINI_KEY" || !GEMINI_API_KEY) return;
-
     console.log("AI Triggered for:", customerMsg);
-    showToast("Shop Assistant thinking...");
 
     try {
-        // 1. Get History (Simplify query to avoid index errors)
-        const msgsSnapshot = await db.collection('chats').doc(chatId).collection('messages')
-            .limit(20)
-            .get();
+        // 1. Check CUSTOM RULES First (Free & Fast)
+        const customReply = getCustomBotReply(customerMsg);
 
-        let history = [];
-        msgsSnapshot.forEach(doc => history.push(doc.data()));
+        // 2. Determine Response (Custom OR Gemini)
+        let finalResponse = customReply;
 
-        // Sort manually
-        history.sort((a, b) => {
-            const tA = (a.timestamp && a.timestamp.toMillis) ? a.timestamp.toMillis() : 0;
-            const tB = (b.timestamp && b.timestamp.toMillis) ? b.timestamp.toMillis() : 0;
-            return tA - tB;
-        });
+        if (!finalResponse) {
+            // Only call Gemini if we have a valid key AND no custom rule matched
+            if (GEMINI_API_KEY && GEMINI_API_KEY !== "REPLACE_WITH_YOUR_GEMINI_KEY" && GEMINI_API_KEY.length > 20) {
+                // Fetch history for context
+                const msgsSnapshot = await db.collection('chats').doc(chatId).collection('messages')
+                    .limit(20).get();
+                let history = [];
+                msgsSnapshot.forEach(doc => history.push(doc.data()));
+                // Sort
+                history.sort((a, b) => (a.timestamp?.toMillis?.() || 0) - (b.timestamp?.toMillis?.() || 0));
 
-        // CHECK IF CUSTOMER JUST SAID "CONFIRM"
-        if (customerMsg.trim().toUpperCase() === "CONFIRM") {
-            // Check if AI previously asked for it
-            const lastAI = [...history].reverse().find(m => m.senderId !== myUserId);
-            if (lastAI && lastAI.text.includes("CONFIRM")) {
-                saveOrderToFirestore(chatId, "Order Confirmed by Customer.\n\n" + history.map(m => m.text).join('\n'));
-                // Let AI acknowledge
-                customerMsg = "I HAVE TYPED CONFIRM";
+                finalResponse = await askAI(customerMsg, history);
             }
         }
 
-        // 2. Ask Gemini
-        const aiResponse = await askAI(customerMsg, history);
-        if (!aiResponse) return;
-
-        // 3. Find Owner ID dynamically
-        let ownerCode = await getOwnerCode();
-        if (!ownerCode) {
-            console.error("AI Error: No owner code");
-            return;
+        // 3. Fallback (If no match found)
+        if (!finalResponse) {
+            finalResponse = "Maazrat, mujhy is sawal ka jawab nahi maloom. 🤖\n\nAp barah-e-karam Shop Owner se direct baat kar len:\n👉 https://wa.me/923001234567";
         }
+
+        if (!finalResponse) return; // Should not happen with fallback, but safe check
+
+        // 4. Find Owner to send as
+        let ownerCode = await getOwnerCode();
+        if (!ownerCode) return;
         ownerCode = ownerCode.trim().toUpperCase();
 
         const snapshot = await db.collection('users').where('userCode', '==', ownerCode).get();
-        if (snapshot.empty) {
-            console.error("AI Error: Owner not found in DB");
-            showToast("AI Error: Store Account (" + ownerCode + ") not found!");
-            return;
-        }
+        if (snapshot.empty) return;
         const ownerId = snapshot.docs[0].id;
 
-        // 4. Send AI Response
+        // 4. Send Response
         const batch = db.batch();
         const msgRef = db.collection('chats').doc(chatId).collection('messages').doc();
         batch.set(msgRef, {
             senderId: ownerId,
-            text: aiResponse,
+            text: finalResponse,
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
         });
         const chatRef = db.collection('chats').doc(chatId);
         batch.update(chatRef, {
-            lastMessage: aiResponse,
+            lastMessage: finalResponse,
             lastMessageTime: firebase.firestore.FieldValue.serverTimestamp(),
             lastSenderId: ownerId
         });
         await batch.commit();
-        console.log("AI Replied:", aiResponse);
-        showToast("New message from Store!");
+        console.log("Auto-Reply Sent:", finalResponse);
+        showToast("Bot replied to customer.");
 
-        // 5. Detect PWA Prompt (Fixed Reference Error)
+        // Detect PWA Prompt
         const pwaPrompt = document.getElementById('pwa-prompt-banner');
-        if (pwaPrompt && aiResponse.includes("CONFIRM") && !aiResponse.includes("EK DAFA CONFIRM")) {
+        if (pwaPrompt && finalResponse.includes("CONFIRM")) {
             pwaPrompt.style.display = 'flex';
         }
+
     } catch (e) {
         console.error("AI Trigger Error", e);
-        // showToast("AI Error. Check console."); 
     }
 }
 
 async function askAI(message, history) {
     const prompt = `You are a professional sales assistant for "KHADER Garments Store".
     
-    STRICT RULES:
-    1. If message is "NEW_ORDER_START", greet nicely in Roman Urdu and ask for: 
-       - 1. Name
-       - 2. Phone Number
-       - 3. Address
-    2. If customer provides details, summarize them and say EXACTLY: "EK DAFA CONFIRM LIKH DEN TAKE ORDER CONFIRM HO JAE."
-    3. If customer says "CONFIRM", say "Shukriya! Apka order received ho gaya he. Hamara staff jald hi apse rabta karega."
-    4. If customer asks any questions after confirmation, answer them in very simple words ("asan lafzoon me").
-    5. LANGUAGE: 
-       - Initial must be Roman Urdu.
-       - If user speaks Urdu (script), reply in Urdu (script).
-       - If user speaks English, reply in English.
-       - Otherwise, stay in Roman Urdu.
-
+    Response Rules:
+    - Keep it short and polite.
+    - If asked about prices, say "Please check our Shop section."
+    - Answer based on the chat history.
+    
     History:
     ${history.map(m => (m.senderId === myUserId ? "Customer: " : "Store: ") + m.text).join('\n')}
     
@@ -436,21 +444,9 @@ async function askAI(message, history) {
         });
         const data = await response.json();
 
-        if (data.error) {
-            console.error("Gemini API Error:", data.error.message);
-            showToast("AI Error: " + data.error.message);
-            return null;
-        }
-
-        if (!data.candidates || data.candidates.length === 0) {
-            showToast("AI Error: No response from Gemini.");
-            return null;
-        }
-
+        if (data.error || !data.candidates) return null;
         return data.candidates[0].content.parts[0].text;
     } catch (e) {
-        console.error("AI Fetch error:", e);
-        showToast("AI Network Error. Check connection.");
         return null;
     }
 }
@@ -1183,10 +1179,10 @@ async function sendMessage() {
 
         await batch.commit();
 
-        // TRIGGER AI IF GUEST
-        if (myUserCode.startsWith('G-')) {
-            triggerAIResponse(currentChatId, text);
-        }
+        // TRIGGER AI (Enhanced: For all users, to enable Bot features)
+        // if (myUserCode.startsWith('G-')) { 
+        setTimeout(() => triggerAIResponse(currentChatId, text), 500);
+        // }
 
     } catch (error) {
         console.error("Send failed:", error);

@@ -10,10 +10,27 @@
     <meta name="theme-color" content="#050505">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-        /* ADMIN PREMIUM THEME */
+        /* ADMIN PREMIUM THEME - SCOPED VARIABLES */
+        :root {
+            --admin-bg: #050505;
+            --admin-card: rgba(30, 30, 30, 0.6);
+            --admin-accent: #D4AF37;
+            /* GOLD */
+            --admin-text: #eee;
+            --admin-border: #333;
+        }
+
         body {
-            background-color: #050505;
-            color: #eee;
+            background-color: var(--admin-bg);
+            color: var(--admin-text);
+        }
+
+        /* Override global accent for Admin */
+        .btn-primary,
+        h2,
+        .sidebar-btn.active,
+        .form-group input:focus {
+            --accent: var(--admin-accent);
         }
 
         .admin-panel {
@@ -33,7 +50,7 @@
         }
 
         h2 {
-            color: var(--accent);
+            color: var(--admin-accent);
             font-weight: 300;
             letter-spacing: 2px;
             text-transform: uppercase;
@@ -76,7 +93,7 @@
         .form-group select:focus,
         .form-group textarea:focus {
             outline: none;
-            border-color: var(--accent);
+            border-color: var(--admin-accent);
             box-shadow: 0 0 10px rgba(212, 175, 55, 0.1);
             background: rgba(0, 0, 0, 0.5);
         }
@@ -90,7 +107,7 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--accent), #b89628);
+            background: linear-gradient(135deg, var(--admin-accent), #b89628);
             color: black;
             border: none;
             font-weight: 700;
@@ -110,8 +127,8 @@
         }
 
         .btn-secondary:hover {
-            border-color: var(--accent);
-            color: var(--accent);
+            border-color: var(--admin-accent);
+            color: var(--admin-accent);
             background: rgba(212, 175, 55, 0.05);
         }
 
@@ -169,7 +186,7 @@
 
         .sidebar-btn.active {
             background: rgba(212, 175, 55, 0.1);
-            color: var(--accent);
+            color: var(--admin-accent);
             border: 1px solid rgba(212, 175, 55, 0.2);
             box-shadow: none;
         }
@@ -220,7 +237,7 @@
             }
 
             .sidebar-btn.active {
-                background: var(--accent);
+                background: var(--admin-accent);
                 color: black;
                 font-weight: 700;
             }
@@ -275,7 +292,16 @@
 
         /* AUTH SCREEN */
         #adminAuthOverlay {
-            background: black;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .auth-card {

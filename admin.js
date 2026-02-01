@@ -180,53 +180,79 @@ const imageUpload = document.getElementById('imageUpload');
 const uploadStatus = document.getElementById('uploadStatus');
 const pImage = document.getElementById('pImage');
 
+// Helper: Upload File to Firebase
+async function uploadImageToFirebase(file) {
+    if (!file) return;
+
+    // Validations
+    if (file.size > 5 * 1024 * 1024) {
+        showToast("File is too large (Max 5MB)", "error");
+        return;
+    }
+
+    // UI Updates
+    if (uploadStatus) {
+        uploadStatus.style.display = 'block';
+        uploadStatus.textContent = "Uploading to Firebase Storage... (Please wait)";
+        uploadStatus.style.color = "#2196f3";
+    }
+    showToast("Uploading image...", "info");
+
+    try {
+        const fileName = `products/${Date.now()}_${file.name || 'pasted_image.png'}`;
+        const storageRef = ref(storage, fileName);
+
+        const snapshot = await uploadBytes(storageRef, file);
+        const downloadURL = await getDownloadURL(snapshot.ref);
+
+        if (pImage) {
+            pImage.value = downloadURL;
+            // Trigger a visual flash to show update
+            pImage.style.borderColor = "#25D366";
+            setTimeout(() => pImage.style.borderColor = "", 1000);
+        }
+
+        showToast("Image uploaded successfully!", "success");
+        if (uploadStatus) {
+            uploadStatus.textContent = "✓ Upload Complete";
+            uploadStatus.style.color = "#25D366";
+        }
+    } catch (err) {
+        console.error("Upload error:", err);
+        showToast("Upload failed: " + err.message, "error");
+        if (uploadStatus) {
+            uploadStatus.textContent = "✘ Upload Failed: " + err.message;
+            uploadStatus.style.color = "#ff4d4d";
+        }
+    }
+}
+
 if (uploadBtn && imageUpload) {
+    // 1. Gallery Button Click
     uploadBtn.addEventListener('click', () => imageUpload.click());
 
-    imageUpload.addEventListener('change', async (e) => {
+    // 2. File Input Change
+    imageUpload.addEventListener('change', (e) => {
         const file = e.target.files[0];
-        if (!file) return;
+        uploadImageToFirebase(file);
+    });
+}
 
-        // Validations
-        if (file.size > 5 * 1024 * 1024) {
-            showToast("File is too large (Max 5MB)", "error");
-            return;
-        }
-
-        // Show uploading status
-        if (uploadStatus) {
-            uploadStatus.style.display = 'block';
-            uploadStatus.textContent = "Uploading to Firebase Storage... (Please wait)";
-            uploadStatus.style.color = "#2196f3"; // Blue for loading
-        }
-
-        try {
-            // Create a storage reference
-            const fileName = `products/${Date.now()}_${file.name}`;
-            const storageRef = ref(storage, fileName);
-
-            // Upload the file
-            const snapshot = await uploadBytes(storageRef, file);
-            console.log('Uploaded a blob or file!');
-
-            // Get the download URL
-            const downloadURL = await getDownloadURL(snapshot.ref);
-
-            if (pImage) pImage.value = downloadURL;
-
-            showToast("Image uploaded successfully!", "success");
-            if (uploadStatus) {
-                uploadStatus.textContent = "✓ Upload Complete";
-                uploadStatus.style.color = "#25D366";
-            }
-        } catch (err) {
-            console.error("Upload error:", err);
-            showToast("Upload failed: " + err.message, "error");
-            if (uploadStatus) {
-                uploadStatus.textContent = "✘ Upload Failed: " + err.message;
-                uploadStatus.style.color = "#ff4d4d";
+// 3. Paste Image Logic (Ctrl+V)
+if (pImage) {
+    pImage.addEventListener('paste', (event) => {
+        const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+        for (const item of items) {
+            if (item.kind === 'file' && item.type.startsWith('image/')) {
+                const file = item.getAsFile();
+                if (file) {
+                    event.preventDefault(); // Stop pasting the binary string
+                    uploadImageToFirebase(file);
+                    return; // Only upload the first image found
+                }
             }
         }
+        // If it's text (URL), let the default paste happen
     });
 }
 
@@ -395,7 +421,7 @@ async function loadOrders() {
                     <p style="margin-bottom: 5px; color: #ccc;"><strong>Address:</strong> ${order.customerAddress}, ${order.customerCity}</p>
                     
                     <div style="background: rgba(255, 255, 255, 0.05); padding: 12px; border: 1px solid #333; border-radius: 8px; margin: 15px 0; font-size: 0.95rem; white-space: pre-line; color: #ddd;">
-                        <strong style="display: block; margin-bottom: 5px; color: var(--accent);">Items:</strong>
+                        <strong style="display: block; margin-bottom: 5px; color: var(--admin-accent);">Items:</strong>
                         ${order.summary}
                     </div>
                     
