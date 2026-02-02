@@ -395,14 +395,21 @@ const ordersList = document.getElementById('ordersList');
 const btnPending = document.getElementById('viewPendingOrders');
 const btnCompleted = document.getElementById('viewCompletedOrders');
 let currentOrderFilter = 'pending';
+let unsubscribeOrders = null; // Track the active listener
 
 async function loadOrders() {
     if (!ordersList) return;
     ordersList.innerHTML = '<p>Loading orders...</p>';
 
+    // Unsubscribe from previous listener if it exists
+    if (unsubscribeOrders) {
+        unsubscribeOrders();
+        unsubscribeOrders = null;
+    }
+
     try {
         const q = query(collection(db, "orders"), where("status", "==", currentOrderFilter));
-        onSnapshot(q, (snapshot) => {
+        unsubscribeOrders = onSnapshot(q, (snapshot) => {
             ordersList.innerHTML = '';
             if (snapshot.empty) {
                 ordersList.innerHTML = `<p>No ${currentOrderFilter} orders found.</p>`;
