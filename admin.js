@@ -436,8 +436,9 @@ async function loadOrders() {
                     <p style="margin-bottom: 5px; color: #ccc;"><strong>Address:</strong> ${escapeHTML(order.customerAddress)}, ${escapeHTML(order.customerCity)}</p>
                     
                     <div style="background: rgba(255, 255, 255, 0.05); padding: 12px; border: 1px solid #333; border-radius: 8px; margin: 15px 0; font-size: 0.95rem; white-space: pre-line; color: #ddd;">
-                        <strong style="display: block; margin-bottom: 5px; color: var(--admin-accent);">Items:</strong>
+                        <strong style="display: block; margin-bottom: 5px; color: var(--admin-accent);">Items & Quantity:</strong>
                         ${escapeHTML(order.summary)}
+                        <span style="display: block; margin-top: 5px; font-weight: bold; color: #fff;"> Total Bill: Rs. ${parseFloat(order.totalPrice || 0).toLocaleString()}</span>
                     </div>
                     
                     <div style="display: flex; gap: 10px; margin-top: 10px;">
