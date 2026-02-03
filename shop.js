@@ -1,16 +1,9 @@
-// Help prevent XSS
-function escapeHTML(str) {
-    if (!str) return "";
-    const p = document.createElement('p');
-    p.textContent = str;
-    return p.innerHTML;
-}
-
 import { db } from './firebase-config.js';
 import { collection, getDocs, query } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const shopGrid = document.getElementById('shopGrid');
 const searchInput = document.getElementById('shopSearch');
+const tabsContainer = document.getElementById('categoryTabs');
 const noResults = document.getElementById('noResults');
 
 let allProducts = [];
@@ -36,7 +29,7 @@ async function initShop() {
             return dateB - dateA;
         });
 
-        setupCategoryDropdown();
+        setupCategoryTabs();
         renderProducts();
 
     } catch (error) {
@@ -47,23 +40,25 @@ async function initShop() {
     }
 }
 
-const categoryFilter = document.getElementById('categoryFilter');
-
-// Generate Category Dropdown dynamically
-function setupCategoryDropdown() {
-    if (!categoryFilter) return;
-
+// Generate Category Tabs dynamically
+function setupCategoryTabs() {
     // Get unique categories from products
-    const categories = [...new Set(allProducts.map(p => p.category))].sort();
+    const categories = ['All', ...new Set(allProducts.map(p => p.category))];
 
-    // Populate select options
-    categoryFilter.innerHTML = `<option value="All">All Categories</option>` +
-        categories.map(cat => `<option value="${escapeHTML(cat)}">${escapeHTML(cat)}</option>`).join('');
+    tabsContainer.innerHTML = categories.map(cat => `
+        <button class="filter-btn ${cat === activeCategory ? 'active' : ''}" data-category="${cat}">
+            ${cat}
+        </button>
+    `).join('');
 
-    // Add change event
-    categoryFilter.addEventListener('change', (e) => {
-        activeCategory = e.target.value;
-        renderProducts();
+    // Add click events to tabs
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            activeCategory = btn.getAttribute('data-category');
+            renderProducts();
+        });
     });
 }
 
@@ -97,12 +92,12 @@ function renderProducts() {
             <a href="product.html?id=${p.id}" style="text-decoration: none; color: inherit;">
                 <div class="product-img">
                     ${isOutOfStock ? '<div class="out-of-stock-badge">SOLD OUT</div>' : ''}
-                    <img src="${p.image}" alt="${escapeHTML(p.name)}" onerror="this.src='https://via.placeholder.com/400x500'" 
+                    <img src="${p.image}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/400x500'" 
                          style="${isOutOfStock ? 'filter: grayscale(100%); opacity: 0.7;' : ''}">
                 </div>
                 <div class="product-info">
-                    <span class="category">${escapeHTML(p.category)}</span>
-                    <h3 class="name">${escapeHTML(p.name)}</h3>
+                    <span class="category">${p.category}</span>
+                    <h3 class="name">${p.name}</h3>
                     <span class="price">Rs. ${parseFloat(p.price).toLocaleString()}</span>
                 </div>
             </a>

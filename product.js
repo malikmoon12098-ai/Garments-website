@@ -18,8 +18,6 @@ const cartBtn = document.getElementById('addToCartBtn');
 
 let currentProduct = null;
 let ownerPhone = '';
-let ownerInsta = '';
-let ownerFB = '';
 
 async function initProduct() {
     if (!productId) {
@@ -43,11 +41,8 @@ async function initProduct() {
         // 2. Fetch Owner Phone for WhatsApp (Legacy but keeping settings fetch)
         const settingsSnap = await getDoc(doc(db, "settings", "contact"));
         if (settingsSnap.exists()) {
-            const sData = settingsSnap.data();
-            ownerPhone = sData.phone || '';
+            ownerPhone = settingsSnap.data().phone || '';
             ownerPhone = ownerPhone.replace(/\D/g, '');
-            ownerInsta = sData.insta || '';
-            ownerFB = sData.fb || '';
         }
 
     } catch (error) {
@@ -85,67 +80,16 @@ function renderProduct(product) {
     }
 }
 
-// ACTION: Buy Now (Open Modal)
-const orderModal = document.getElementById('orderModal');
-const closeModal = document.getElementById('closeModal');
-const directOrderForm = document.getElementById('directOrderForm');
-const orderSuccessDiv = document.getElementById('orderSuccess');
-
+// ACTION: Buy Now (Redirect to U-CHAT)
 if (buyBtn) {
     buyBtn.addEventListener('click', () => {
         if (!currentProduct) return;
-        const msg = `BUY_NOW: ${currentProduct.name} - Rs. ${currentProduct.price}`;
-        window.location.href = `U-CHAT/index.html?orderText=${encodeURIComponent(msg)}`;
-    });
-}
 
-if (closeModal) {
-    closeModal.addEventListener('click', () => {
-        orderModal.style.display = 'none';
-    });
-}
+        const text = `*Order Request*\n\n*Product:* ${currentProduct.name}\n*Price:* Rs. ${currentProduct.price}\n*Link:* ${window.location.href}\n*Image:* ${currentProduct.image}\n\nI want to buy this. Please confirm.`;
 
-window.addEventListener('click', (e) => {
-    if (e.target === orderModal) orderModal.style.display = 'none';
-});
-
-// DIRECT ORDER SUBMISSION (DARAZ STYLE)
-import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-if (directOrderForm) {
-    directOrderForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        if (!currentProduct) return;
-
-        const btn = document.getElementById('confirmOrderBtn');
-        btn.disabled = true;
-        btn.textContent = "Processing...";
-
-        try {
-            const orderData = {
-                customerName: document.getElementById('custName').value,
-                customerPhone: document.getElementById('custPhone').value,
-                customerAddress: document.getElementById('custAddress').value,
-                customerCity: document.getElementById('custCity').value,
-                customerCode: document.getElementById('custPhone').value, // Use phone as code for now
-                summary: `*Single Product Order*\n- ${currentProduct.name} (Rs. ${currentProduct.price})\n- Link: ${window.location.href}`,
-                totalPrice: parseFloat(currentProduct.price),
-                status: 'pending',
-                timestamp: serverTimestamp()
-            };
-
-            await addDoc(collection(db, "orders"), orderData);
-
-            // Hide form and show success
-            directOrderForm.style.display = 'none';
-            orderSuccessDiv.style.display = 'block';
-
-        } catch (error) {
-            console.error("Order error:", error);
-            alert("Failed to place order. Please try again.");
-            btn.disabled = false;
-            btn.textContent = "Confirm Direct Order";
-        }
+        // Redirect to U-CHAT with parameters
+        const uChatUrl = `U-CHAT/index.html?orderText=${encodeURIComponent(text)}&pId=${productId}&pName=${encodeURIComponent(currentProduct.name)}&pPrice=${currentProduct.price}`;
+        window.location.href = uChatUrl;
     });
 }
 
@@ -164,6 +108,7 @@ if (cartBtn) {
 
         cart.push(currentProduct);
         localStorage.setItem('cart', JSON.stringify(cart));
+        window.dispatchEvent(new Event('cartUpdated'));
 
         cartBtn.textContent = "Added to Cart ✓";
         cartBtn.style.background = "#121212";

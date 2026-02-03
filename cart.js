@@ -9,19 +9,14 @@ const cartCountHeader = document.getElementById('cartCountHeader');
 
 let cart = JSON.parse(localStorage.getItem('cart') || '[]');
 let ownerPhone = '';
-let ownerInsta = '';
-let ownerFB = '';
 
 // Load Owner Phone
 async function loadSettings() {
     try {
         const docSnap = await getDoc(doc(db, "settings", "contact"));
         if (docSnap.exists()) {
-            const sData = docSnap.data();
-            ownerPhone = sData.phone || '';
+            ownerPhone = docSnap.data().phone || '';
             ownerPhone = ownerPhone.replace(/\D/g, '');
-            ownerInsta = sData.insta || '';
-            ownerFB = sData.fb || '';
         }
     } catch (error) {
         console.error("Error loading settings:", error);
@@ -71,82 +66,27 @@ function renderCart() {
 function removeItem(index) {
     cart.splice(index, 1);
     localStorage.setItem('cart', JSON.stringify(cart));
+    window.dispatchEvent(new Event('cartUpdated'));
     renderCart();
 }
-
-// ACTION: Checkout (Open Modal)
-const orderModal = document.getElementById('orderModal');
-const closeModal = document.getElementById('closeModal');
-const directOrderForm = document.getElementById('directOrderForm');
-const orderSuccessDiv = document.getElementById('orderSuccess');
 
 if (checkoutBtn) {
     checkoutBtn.addEventListener('click', () => {
         if (cart.length === 0) return alert("Cart is empty!");
 
-        // Generate Summary for AI
-        let itemsStr = cart.map(item => item.name).join(', ');
-        let total = cart.reduce((sum, item) => sum + parseFloat(item.price), 0);
+        let message = `*New Order Request*\n`;
+        let total = 0;
 
-        const msg = `BUY_NOW: ${itemsStr} - Total Rs. ${total.toLocaleString()}`;
-        window.location.href = `U-CHAT/index.html?orderText=${encodeURIComponent(msg)}`;
-    });
-}
+        cart.forEach(item => {
+            message += `- ${item.name} (Rs. ${item.price})\n`;
+            total += parseFloat(item.price);
+        });
 
-if (closeModal) {
-    closeModal.addEventListener('click', () => {
-        orderModal.style.display = 'none';
-    });
-}
+        message += `\n*Total Bill:* Rs. ${total}\n\nI want to order these items. Please confirm.`;
 
-window.addEventListener('click', (e) => {
-    if (e.target === orderModal) orderModal.style.display = 'none';
-});
-
-// DIRECT ORDER SUBMISSION (DARAZ STYLE)
-import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-if (directOrderForm) {
-    directOrderForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        if (cart.length === 0) return;
-
-        const btn = document.getElementById('confirmOrderBtn');
-        btn.disabled = true;
-        btn.textContent = "Processing...";
-
-        try {
-            let itemsSummary = `*Cart Order*\n`;
-            let total = 0;
-            cart.forEach(item => {
-                itemsSummary += `- ${item.name} (Rs. ${item.price})\n`;
-                total += parseFloat(item.price);
-            });
-
-            const orderData = {
-                customerName: document.getElementById('custName').value,
-                customerPhone: document.getElementById('custPhone').value,
-                customerAddress: document.getElementById('custAddress').value,
-                customerCity: document.getElementById('custCity').value,
-                customerCode: document.getElementById('custPhone').value,
-                summary: itemsSummary,
-                totalPrice: total,
-                status: 'pending',
-                timestamp: serverTimestamp()
-            };
-
-            await addDoc(collection(db, "orders"), orderData);
-
-            // Hide form and show success
-            directOrderForm.style.display = 'none';
-            orderSuccessDiv.style.display = 'block';
-
-        } catch (error) {
-            console.error("Order error:", error);
-            alert("Failed to place order. Please try again.");
-            btn.disabled = false;
-            btn.textContent = "Confirm Direct Order";
-        }
+        // Redirect to U-CHAT with parameters
+        const uChatUrl = `U-CHAT/index.html?orderText=${encodeURIComponent(message)}`;
+        window.location.href = uChatUrl;
     });
 }
 

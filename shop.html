@@ -52,17 +52,19 @@
             </div>
         </div>
 
-        <div class="filter-dropdown-container">
-            <label for="categoryFilter"
-                style="font-weight: 800; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 10px; display: block;">Filter
-                by Category</label>
-            <select id="categoryFilter" class="category-select">
-                <option value="All">All Categories</option>
-                <!-- Dynamic categories will be added here -->
-            </select>
+        <div class="filter-tabs" id="categoryTabs">
+            <button class="filter-btn active" data-category="All">All</button>
+            <!-- Categories will be added here dynamically -->
         </div>
 
         <div id="shopGrid" class="product-grid">
+            <!-- Skeletons while loading -->
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
             <!-- Products will be loaded here -->
             <p style="text-align: center; width: 100%;">Loading our collection...</p>
         </div>
@@ -81,7 +83,13 @@
         </div>
     </footer>
 
+    <a href="cart.html" class="floating-cart">
+        <span class="cart-icon">🛒</span>
+        <span id="cartBadge" class="cart-badge">0</span>
+    </a>
+
     <script type="module" src="shop.js"></script>
+    <script src="script.js"></script>
 </body>
 
 </html>
