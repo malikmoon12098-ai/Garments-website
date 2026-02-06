@@ -411,13 +411,31 @@ function getAppUrl(item) {
 }
 
 // Global listener for inquiry actions
+let activeInquiry = null; // Store for FAB re-opening
+
 document.addEventListener('click', async (e) => {
     const delBtn = e.target.closest('.delete-inquiry');
     const convertBtn = e.target.closest('.convert-order');
     const chatBtn = e.target.closest('.open-app-btn');
+    const fabBtn = e.target.closest('#quickOrderFloater');
+    const modalChatBtn = e.target.closest('#modalOpenChatBtn');
 
     if (chatBtn) {
         window.open(chatBtn.dataset.url, '_blank');
+    }
+
+    if (fabBtn) {
+        if (activeInquiry) {
+            openConvertModal(activeInquiry);
+        } else {
+            showToast("Koi active order nahi hai!", "info");
+        }
+    }
+
+    if (modalChatBtn) {
+        const url = document.getElementById('convChatUrl').value;
+        if (url) window.open(url, '_blank');
+        else showToast("Chat URL missing", "error");
     }
 
     if (delBtn) {
@@ -437,23 +455,44 @@ document.addEventListener('click', async (e) => {
     }
 
     if (convertBtn) {
-        const modal = document.getElementById('convertInquiryModal');
-        if (!modal) return;
+        const inquiryData = {
+            id: convertBtn.dataset.id,
+            pid: convertBtn.dataset.pid,
+            product: convertBtn.dataset.product,
+            qty: convertBtn.dataset.qty,
+            url: getAppUrl({ platform: convertBtn.dataset.platform }) // Need to pass platform or store it
+        };
+        // We need platform to generate URL. Let's fix getAppUrl or logic.
+        // Quick fix: Grab the platform from the list item text or pass it in data attr.
+        // Better: Pass platform in data attribute.
+        // Let's assume we update the render function to include data-platform.
 
-        // Fill hidden fields
-        document.getElementById('convInquiryId').value = convertBtn.dataset.id;
-        document.getElementById('convProductId').value = convertBtn.dataset.pid;
-        document.getElementById('convProductName').value = convertBtn.dataset.product;
-        document.getElementById('convQty').value = convertBtn.dataset.qty;
+        // RE-READING DOM to find platform from parent if not in button
+        const itemDiv = convertBtn.closest('.admin-item');
+        const platformSpan = itemDiv.querySelector('strong span');
+        const platform = platformSpan ? platformSpan.innerText.trim() : 'WhatsApp';
+        inquiryData.url = getAppUrl({ platform: platform });
 
-        // Reset visible fields
-        document.getElementById('convertInquiryForm').reset();
-
-        // Show modal
-        modal.style.display = 'flex';
-        document.body.classList.add('stop-scroll');
+        activeInquiry = inquiryData;
+        openConvertModal(inquiryData);
     }
 });
+
+function openConvertModal(data) {
+    const modal = document.getElementById('convertInquiryModal');
+    if (!modal) return;
+
+    // Fill fields
+    document.getElementById('convInquiryId').value = data.id;
+    document.getElementById('convProductId').value = data.pid;
+    document.getElementById('convProductName').value = data.product;
+    document.getElementById('convQty').value = data.qty;
+    document.getElementById('convChatUrl').value = data.url;
+
+    // Show modal
+    modal.style.display = 'flex';
+    document.body.classList.add('stop-scroll');
+}
 
 // Inquiry Modal Close
 const closeConvModal = document.getElementById('closeConvModal');
