@@ -1,7 +1,6 @@
-import { db, storage } from './firebase-config.js';
-import { collection, addDoc, getDocs, deleteDoc, doc, serverTimestamp, query, setDoc, getDoc, updateDoc, onSnapshot, where, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { collection, doc, getDoc, getDocs, setDoc, query, onSnapshot, serverTimestamp, deleteDoc, limit, where, addDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
-import { checkAuth, highlightSidebar, showToast, escapeHTML } from './admin-core.js';
+import { checkAuth, highlightSidebar, showToast, escapeHTML, showConfirm } from './admin-core.js';
 
 // --- INITIALIZE PAGE ---
 document.addEventListener('DOMContentLoaded', () => {
@@ -95,9 +94,10 @@ function attachOrderListeners() {
     });
     document.querySelectorAll('.delete-order-btn').forEach(btn => {
         btn.onclick = () => {
+            const orderId = btn.dataset.id;
             showConfirm("Kya aap waqai delete karna chahte hain?", "Ye order dashboard se hamesha ke liye khatam ho jaye ga.", async () => {
                 try {
-                    await deleteDoc(doc(db, "orders", btn.dataset.id));
+                    await deleteDoc(doc(db, "orders", orderId));
                     showToast("Order Delete Ho Gaya!", "success");
                 } catch (e) {
                     showToast(e.message, "error");
@@ -138,7 +138,7 @@ function initImageUpload() {
             if (!file) return;
             showToast("Uploading...", "info");
             try {
-                const storageRef = ref(storage, `products/${Date.now()}_${file.name}`);
+                const storageRef = ref(storage, `products / ${Date.now()}_${file.name} `);
                 const snapshot = await uploadBytes(storageRef, file);
                 const url = await getDownloadURL(snapshot.ref);
                 if (pImage) pImage.value = url;
@@ -163,7 +163,7 @@ async function loadProducts() {
             const div = document.createElement('div');
             div.className = 'admin-item';
             div.innerHTML = `
-                <img src="${product.image}" onerror="this.src='https://via.placeholder.com/150'">
+    < img src = "${product.image}" onerror = "this.src='https://via.placeholder.com/150'" >
                 <h4>${escapeHTML(product.name)}</h4>
                 <p>${escapeHTML(product.category)} - Rs. ${parseFloat(product.price).toLocaleString()}<br>
                 <span style="color: ${inStock ? '#25D366' : '#ff4d4d'};">${inStock ? '● In Stock' : '● Out of Stock'}</span></p>
@@ -171,7 +171,7 @@ async function loadProducts() {
                     <button class="toggle-stock" data-id="${id}" data-status="${inStock}" style="background:#333; color:white; border:none; padding:5px; border-radius:4px; cursor:pointer; flex:1;">${inStock ? 'Mark Out' : 'Mark In'}</button>
                     <button class="delete-product" data-id="${id}" style="background:rgba(255,77,77,0.1); color:#ff4d4d; border:1px solid #ff4d4d; padding:5px; border-radius:4px; cursor:pointer; flex:1;">Remove</button>
                 </div>
-            `;
+`;
             productList.appendChild(div);
         });
         attachProductListeners();
@@ -215,19 +215,119 @@ async function loadInquiries() {
         onSnapshot(query(collection(db, "inquiries"), limit(50)), (snapshot) => {
             inquiriesList.innerHTML = '';
             if (snapshot.empty) { inquiriesList.innerHTML = '<p>No inquiries yet.</p>'; return; }
-            const items = []; snapshot.forEach(d => items.push(d.data()));
-            items.sort((a, b) => (b.timestamp?.toDate() || 0) - (a.timestamp?.toDate() || 0));
-            items.forEach(item => {
+            snapshot.forEach(docSnap => {
+                const item = docSnap.data();
+                const id = docSnap.id;
                 const date = item.timestamp ? item.timestamp.toDate().toLocaleString() : 'Just now';
                 const div = document.createElement('div');
                 div.className = 'admin-item';
-                div.style.borderLeft = `5px solid ${item.platform === 'WhatsApp' ? '#25D366' : '#1877F2'}`;
-                div.innerHTML = `<div><strong>${item.platform} inquiry!</strong><p>${escapeHTML(item.productName)} (Qty: ${item.qty})</p></div><span style="font-size:0.8rem; color:#888;">${date}</span>`;
+                const platformColor = item.platform === 'WhatsApp' ? '#25D366' :
+                    item.platform === 'Facebook' ? '#1877F2' :
+                        '#E1306C'; // Instagram pink
+
+                div.style.borderLeft = `5px solid ${platformColor}`;
+                div.style.display = 'flex';
+                div.style.justifyContent = 'space-between';
+                div.style.alignItems = 'center';
+
+                div.innerHTML = `
+                    <div style="flex: 1;">
+                        <strong><span style="color: ${platformColor}">${item.platform}</span> inquiry!</strong>
+                        <p style="margin: 5px 0;">${escapeHTML(item.productName)} (Qty: ${item.qty})</p>
+                        <span style="font-size:0.8rem; color:#888;">${date}</span>
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <button class="convert-order" 
+                            data-id="${id}" 
+                            data-product="${escapeHTML(item.productName)}" 
+                            data-qty="${item.qty}"
+                            data-pid="${item.productId}"
+                            style="background: rgba(37, 211, 102, 0.1); border: 1px solid #25D366; color: #25D366; padding: 10px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: 0.3s;">
+                            🛒 Order
+                        </button>
+                        <button class="delete-inquiry" data-id="${id}" 
+                            style="background: rgba(234, 84, 85, 0.1); border: 1px solid #ea5455; color: #ea5455; padding: 10px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s;">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                        </button>
+                    </div>
+                `;
                 inquiriesList.appendChild(div);
             });
         });
     } catch (e) { console.error(e); }
 }
+
+// Global listener for inquiry actions
+document.addEventListener('click', async (e) => {
+    const delBtn = e.target.closest('.delete-inquiry');
+    const convertBtn = e.target.closest('.convert-order');
+
+    if (delBtn) {
+        const id = delBtn.dataset.id;
+        showConfirm(
+            "Inquiry Delete Karen?",
+            "Kya aap waqai is inquiry ko hamesha ke liye khatam karna chahte hain?",
+            async () => {
+                try {
+                    await deleteDoc(doc(db, "inquiries", id));
+                    showToast("Inquiry Deleted!", "success");
+                } catch (err) {
+                    showToast("Khatam karne mein masla hua.", "error");
+                }
+            }
+        );
+    }
+
+    if (convertBtn) {
+        const id = convertBtn.dataset.id;
+        const productName = convertBtn.dataset.product;
+        const qty = convertBtn.dataset.qty;
+        const productId = convertBtn.dataset.pid;
+
+        // Ask for Customer Details
+        const name = prompt("Customer Name?");
+        if (!name) return;
+        const phone = prompt("Customer Phone Number?");
+        if (!phone) return;
+        const city = prompt("City?");
+        if (!city) return;
+        const address = prompt("Full Address?");
+        if (!address) return;
+
+        showToast("Converting to Order...", "info");
+
+        try {
+            // Get product price to calculate total (fallback if not available)
+            let price = 0;
+            const pSnap = await getDoc(doc(db, "products", productId));
+            if (pSnap.exists()) price = pSnap.data().price;
+
+            const orderData = {
+                customerName: name,
+                customerPhone: phone,
+                customerAddress: address,
+                customerCity: city,
+                productId: productId,
+                productName: productName,
+                qty: parseInt(qty),
+                totalPrice: price * parseInt(qty),
+                summary: `${productName} (Qty: ${qty})`,
+                status: 'pending',
+                timestamp: serverTimestamp()
+            };
+
+            // 1. Create Order
+            await addDoc(collection(db, "orders"), orderData);
+            // 2. Delete Inquiry
+            await deleteDoc(doc(db, "inquiries", id));
+
+            showToast("Order Created Successfully!", "success");
+        } catch (err) {
+            console.error(err);
+            showToast("Order banane mein masla hua.", "error");
+        }
+    }
+});
 
 // --- SETTINGS LOGIC ---
 async function loadContactInfo() {

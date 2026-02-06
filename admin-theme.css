@@ -345,34 +345,6 @@ header.admin-header {
     gap: 25px;
 }
 
-/* ADMIN BACK BUTTON */
-.admin-back-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    border: 1px solid var(--glass-border);
-    border-radius: 12px;
-    padding: 10px 18px;
-    color: #fff;
-    text-decoration: none;
-    font-weight: 600;
-    margin-bottom: 25px;
-    transition: 0.3s;
-}
-
-.admin-back-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    transform: translateX(-5px);
-}
-
-.admin-back-btn svg {
-    width: 20px;
-    height: 20px;
-    stroke: currentColor;
-}
-
 /* --- TOASTS (Glassy) --- */
 .toast-container {
     position: fixed;
