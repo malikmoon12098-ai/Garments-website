@@ -19,6 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
         initImageUpload();
     } else if (currentPage === 'admin-inventory.html') {
         loadProducts();
+    } else if (currentPage === 'admin-alerts.html') {
+        loadAlerts();
     } else if (currentPage === 'admin-messages.html') {
         loadInquiries();
     } else if (currentPage === 'admin-settings.html') {
@@ -103,7 +105,30 @@ function attachOrderFilters() {
 function attachOrderListeners() {
     document.querySelectorAll('.complete-btn').forEach(btn => {
         btn.onclick = async () => {
-            try { await updateDoc(doc(db, "orders", btn.dataset.id), { status: 'completed' }); showToast("Order Completed!", "success"); } catch (e) { showToast(e.message, "error"); }
+            const id = btn.dataset.id;
+            try {
+                // 1. Get order details to find productId and qty
+                const oSnap = await getDoc(doc(db, "orders", id));
+                if (!oSnap.exists()) return;
+                const order = oSnap.data();
+
+                // 2. Update stock
+                const pRef = doc(db, "products", order.productId);
+                const pSnap = await getDoc(pRef);
+                if (pSnap.exists()) {
+                    const product = pSnap.data();
+                    const newStock = Math.max(0, (product.stock || 0) - (order.qty || 1));
+                    const updateData = { stock: newStock };
+                    if (newStock === 0) updateData.inStock = false;
+                    await updateDoc(pRef, updateData);
+                }
+
+                // 3. Mark order as completed
+                await updateDoc(doc(db, "orders", id), { status: 'completed' });
+                showToast("Order Completed & Stock Updated!", "success");
+            } catch (e) {
+                showToast(e.message, "error");
+            }
         }
     });
     document.querySelectorAll('.delete-order-btn').forEach(btn => {
@@ -134,7 +159,9 @@ function initAddProductForm() {
             category: document.getElementById('pCategory').value,
             image: document.getElementById('pImage').value,
             description: document.getElementById('pDesc').value,
-            inStock: true,
+            stock: parseInt(document.getElementById('pStock').value) || 0,
+            threshold: parseInt(document.getElementById('pThreshold').value) || 0,
+            inStock: parseInt(document.getElementById('pStock').value) > 0,
             createdAt: serverTimestamp()
         };
         try { await addDoc(collection(db, "products"), product); showToast("Success!", "success"); form.reset(); } catch (e) { showToast(e.message, "error"); }
@@ -180,6 +207,7 @@ async function loadProducts() {
                 <img src="${product.image}" onerror="this.src='https://via.placeholder.com/150'">
                 <h4>${escapeHTML(product.name)}</h4>
                 <p>${escapeHTML(product.category)} - Rs. ${parseFloat(product.price).toLocaleString()}<br>
+                <strong>Stock:</strong> ${product.stock || 0} (Alert at: ${product.threshold || 0})<br>
                 <span style="color: ${inStock ? '#25D366' : '#ff4d4d'};">${inStock ? '● In Stock' : '● Out of Stock'}</span></p>
                 <div style="display: flex; gap: 5px; margin-top: 10px;">
                     <button class="toggle-stock" data-id="${id}" data-status="${inStock}" style="background:#333; color:white; border:none; padding:5px; border-radius:4px; cursor:pointer; flex:1;">${inStock ? 'Mark Out' : 'Mark In'}</button>
@@ -293,25 +321,54 @@ document.addEventListener('click', async (e) => {
     }
 
     if (convertBtn) {
-        const id = convertBtn.dataset.id;
-        const productName = convertBtn.dataset.product;
-        const qty = convertBtn.dataset.qty;
-        const productId = convertBtn.dataset.pid;
+        const modal = document.getElementById('convertInquiryModal');
+        if (!modal) return;
 
-        // Ask for Customer Details
-        const name = prompt("Customer Name?");
-        if (!name) return;
-        const phone = prompt("Customer Phone Number?");
-        if (!phone) return;
-        const city = prompt("City?");
-        if (!city) return;
-        const address = prompt("Full Address?");
-        if (!address) return;
+        // Fill hidden fields
+        document.getElementById('convInquiryId').value = convertBtn.dataset.id;
+        document.getElementById('convProductId').value = convertBtn.dataset.pid;
+        document.getElementById('convProductName').value = convertBtn.dataset.product;
+        document.getElementById('convQty').value = convertBtn.dataset.qty;
+
+        // Reset visible fields
+        document.getElementById('convertInquiryForm').reset();
+
+        // Show modal
+        modal.style.display = 'flex';
+    }
+});
+
+// Inquiry Modal Close
+const closeConvModal = document.getElementById('closeConvModal');
+if (closeConvModal) {
+    closeConvModal.onclick = () => document.getElementById('convertInquiryModal').style.display = 'none';
+}
+
+// Inquiry Form Submission
+const convertInquiryForm = document.getElementById('convertInquiryForm');
+if (convertInquiryForm) {
+    convertInquiryForm.onsubmit = async (e) => {
+        e.preventDefault();
+
+        const id = document.getElementById('convInquiryId').value;
+        const productId = document.getElementById('convProductId').value;
+        const productName = document.getElementById('convProductName').value;
+        const qty = document.getElementById('convQty').value;
+
+        const name = document.getElementById('convCustName').value.trim();
+        const phone = document.getElementById('convCustPhone').value.trim();
+        const city = document.getElementById('convCustCity').value.trim();
+        const address = document.getElementById('convCustAddress').value.trim();
+
+        if (!name || !phone || !city || !address) {
+            showToast("Sari details likhen!", "error");
+            return;
+        }
 
         showToast("Converting to Order...", "info");
 
         try {
-            // Get product price to calculate total (fallback if not available)
+            // Get product price
             let price = 0;
             const pSnap = await getDoc(doc(db, "products", productId));
             if (pSnap.exists()) price = pSnap.data().price;
@@ -336,12 +393,13 @@ document.addEventListener('click', async (e) => {
             await deleteDoc(doc(db, "inquiries", id));
 
             showToast("Order Created Successfully!", "success");
+            document.getElementById('convertInquiryModal').style.display = 'none';
         } catch (err) {
             console.error(err);
             showToast("Order banane mein masla hua.", "error");
         }
-    }
-});
+    };
+}
 
 // --- SETTINGS LOGIC ---
 async function loadContactInfo() {
@@ -373,4 +431,40 @@ function initSettingsForm() {
         };
         try { await setDoc(doc(db, "settings", "contact"), data); showToast("Settings Updated!", "success"); } catch (e) { showToast(e.message, "error"); }
     };
+}
+
+async function loadAlerts() {
+    const alertsList = document.getElementById('alertsList');
+    if (!alertsList) return;
+    alertsList.innerHTML = '<p>Loading alerts...</p>';
+    try {
+        const querySnapshot = await getDocs(collection(db, "products"));
+        alertsList.innerHTML = '';
+        let count = 0;
+        querySnapshot.forEach(docSnap => {
+            const product = docSnap.data();
+            const id = docSnap.id;
+            const stock = product.stock || 0;
+            const threshold = product.threshold || 0;
+
+            if (stock <= threshold) {
+                count++;
+                const div = document.createElement('div');
+                div.className = 'admin-item';
+                div.style.borderLeft = '5px solid #ff4d4d';
+                div.innerHTML = `
+                    <div style="display: flex; gap: 15px; align-items: center;">
+                        <img src="${product.image}" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover;">
+                        <div>
+                            <h4 style="margin:0;">${escapeHTML(product.name)}</h4>
+                            <p style="margin:5px 0; color: #ff4d4d; font-weight: bold;">⚠️ Restock this product, it's about to finish!</p>
+                            <p style="margin:0; font-size: 0.85rem; color: #888;">Current Stock: ${stock} | Threshold: ${threshold}</p>
+                        </div>
+                    </div>
+                `;
+                alertsList.appendChild(div);
+            }
+        });
+        if (count === 0) alertsList.innerHTML = '<p>✅ All products are well-stocked. No alerts.</p>';
+    } catch (e) { console.error(e); }
 }

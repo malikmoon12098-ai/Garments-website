@@ -28,8 +28,9 @@
         <div class="admin-layout">
             <aside class="admin-sidebar"><a href="admin-orders.html" class="sidebar-btn">Orders</a><a
                     href="admin-add-product.html" class="sidebar-btn active">Add Product</a><a
-                    href="admin-inventory.html" class="sidebar-btn">Inventory</a><a href="admin-messages.html"
-                    class="sidebar-btn">Messages</a><a href="admin-settings.html" class="sidebar-btn">Settings</a>
+                    href="admin-inventory.html" class="sidebar-btn">Inventory</a><a href="admin-alerts.html"
+                    class="sidebar-btn">Stock Alerts</a><a href="admin-messages.html" class="sidebar-btn">Messages</a><a
+                    href="admin-settings.html" class="sidebar-btn">Settings</a>
             </aside>
             <main class="admin-content-area">
                 <div class="admin-card">
@@ -58,11 +59,17 @@
                                         id="uploadBtn"
                                         style="background: var(--clr-add); color: white; border: none; border-radius: 12px; padding: 0 20px; font-weight: 600; cursor: pointer;">Gallery</button>
                                 </div>
-                                <input type="file" id="imageUpload" accept="image/*" style="display:none;">
                                 <p id="uploadStatus"
                                     style="font-size: 0.75rem; color: #28c76f; margin-top: 5px; display: none;">Photo
                                     upload ho rahi he...</p>
                             </div>
+                        </div>
+                        <input type="file" id="imageUpload" accept="image/*" style="display:none;">
+                        <div class="grid-two">
+                            <div class="form-group"><label>Initial Stock (Quantity)</label><input type="number"
+                                    id="pStock" required placeholder="100"></div>
+                            <div class="form-group"><label>Low Stock Alert Level</label><input type="number"
+                                    id="pThreshold" required placeholder="5"></div>
                         </div>
                         <div class="form-group"><label>Description (Optional)</label><textarea id="pDesc" rows="3"
                                 placeholder="Product ke baare mein kuch kahein..."></textarea></div>

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orders | KHADER Admin</title>
+    <title>Stock Alerts | KHADER Admin</title>
     <link rel="stylesheet" href="admin-theme.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
@@ -33,28 +33,21 @@
 
         <div class="admin-layout">
             <aside class="admin-sidebar" id="sidebar">
-                <a href="admin-orders.html" class="sidebar-btn active">Orders</a>
+                <a href="admin-orders.html" class="sidebar-btn">Orders</a>
                 <a href="admin-add-product.html" class="sidebar-btn">Add Product</a>
                 <a href="admin-inventory.html" class="sidebar-btn">Inventory</a>
-                <a href="admin-alerts.html" class="sidebar-btn">Stock Alerts</a>
+                <a href="admin-alerts.html" class="sidebar-btn active">Stock Alerts</a>
                 <a href="admin-messages.html" class="sidebar-btn">Messages</a>
                 <a href="admin-settings.html" class="sidebar-btn">Settings</a>
             </aside>
 
             <main class="admin-content-area">
                 <div class="admin-card">
-                    <h2>Orders List</h2>
-                    <p class="subtitle">Direct customer orders automatically show up here.</p>
+                    <h2>Stock Alerts ⚠️</h2>
+                    <p class="subtitle">Products that need restocking will appear here.</p>
 
-                    <div style="display: flex; gap: 12px; margin-bottom: 30px;">
-                        <button id="viewPendingOrders" class="btn"
-                            style="background: #ff9800; color: #000; padding: 12px 24px; border-radius: 10px; border: none; font-weight: 600; cursor: pointer;">Pending</button>
-                        <button id="viewCompletedOrders" class="btn"
-                            style="background: rgba(255,255,255,0.05); color: #888; border: 1px solid rgba(255,255,255,0.1); padding: 12px 24px; border-radius: 10px; font-weight: 600; cursor: pointer;">Completed</button>
-                    </div>
-
-                    <div id="ordersList">
-                        <p>Loading orders...</p>
+                    <div id="alertsList" class="product-list-admin">
+                        <p>Loading alerts...</p>
                     </div>
                 </div>
             </main>
