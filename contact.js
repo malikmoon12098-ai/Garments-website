@@ -13,15 +13,25 @@ async function loadContactPage() {
             document.getElementById('displayAddress').textContent = data.address || 'Not available';
 
             if (data.insta) {
+                document.getElementById('itemInsta').style.display = 'block';
                 const instaLink = document.getElementById('displayInsta');
                 instaLink.href = data.insta;
-                instaLink.style.display = 'inline-block';
+
+                // Try to extract handle for a cleaner look
+                try {
+                    const url = new URL(data.insta);
+                    const handle = url.pathname.replace(/\//g, '');
+                    if (handle) instaLink.textContent = `@${handle}`;
+                } catch (e) {
+                    instaLink.textContent = 'Visit Instagram';
+                }
             }
 
             if (data.fb) {
+                document.getElementById('itemFB').style.display = 'block';
                 const fbLink = document.getElementById('displayFB');
                 fbLink.href = data.fb;
-                fbLink.style.display = 'inline-block';
+                fbLink.textContent = 'Chat on Facebook';
             }
         } else {
             document.getElementById('displayPhone').textContent = 'Contact details coming soon';
