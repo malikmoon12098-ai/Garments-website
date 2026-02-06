@@ -51,10 +51,9 @@
             color: white;
             font-size: 1.5rem;
             text-align: center;
-            letter-spacing: 10px;
+            letter-spacing: 12px;
             outline: none;
             box-sizing: border-box;
-            /* CRITICAL FIX */
             margin-bottom: 20px;
         }
 
@@ -92,7 +91,35 @@
         <button id="loginBtn">Unlock Admin</button>
     </div>
 
-    <script type="module" src="admin.js"></script>
+    <script>
+        // INTERNAL LOGIC - NO EXTERNAL FILES
+        const CORRECT_PIN = "4321";
+        const btn = document.getElementById('loginBtn');
+        const inp = document.getElementById('adminPin');
+
+        // Force focus
+        window.onload = () => inp.focus();
+
+        function attemptLogin() {
+            if (inp.value === CORRECT_PIN) {
+                // SUCCESS
+                sessionStorage.setItem('adminAuth', 'true');
+                // Force redirect
+                window.location.href = 'admin-orders.html';
+            } else {
+                // FAIL
+                alert("Ghalat PIN!");
+                inp.value = '';
+                inp.focus();
+            }
+        }
+
+        btn.onclick = attemptLogin;
+
+        inp.onkeypress = (e) => {
+            if (e.key === 'Enter') attemptLogin();
+        }
+    </script>
 </body>
 
 </html>
