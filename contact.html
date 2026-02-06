@@ -64,9 +64,7 @@
 </head>
 
 <body>
-    <a href="index.html" class="back-btn" title="Back to Home">←</a>
-
-    <header id="header" class="scrolled">
+    <header id="header">
         <nav class="container">
             <div class="logo">
                 <a href="index.html">
@@ -84,68 +82,69 @@
                 <span></span>
             </button>
         </nav>
-        <div class="back-btn-container">
-            <a href="index.html" class="back-btn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                    stroke-linejoin="round">
-                    <line x1="19" y1="12" x2="5" y2="12"></line>
-                    <polyline points="12 19 5 12 12 5"></polyline>
-                </svg>
-                Back to Home
-            </a>
+    </header>
+
+    <div class="back-btn-container">
+        <a href="index.html" class="back-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            Back to Home
+        </a>
+    </div>
+
+    <main class="contact-page container">
+        <div class="section-header" style="text-align: left;">
+            <span class="sub"
+                style="color: var(--accent); font-weight: 700; text-transform: uppercase; font-size: 0.8rem;">Get In
+                Touch</span>
+            <h2 style="font-size: 3rem; margin-top: 0.5rem;">Contact Khader</h2>
         </div>
 
-
-        <main class="contact-page container">
-            <div class="section-header" style="text-align: left;">
-                <span class="sub"
-                    style="color: var(--accent); font-weight: 700; text-transform: uppercase; font-size: 0.8rem;">Get In
-                    Touch</span>
-                <h2 style="font-size: 3rem; margin-top: 0.5rem;">Contact Khader</h2>
-            </div>
-
-            <div class="contact-grid">
-                <div class="contact-details">
-                    <div class="contact-info-item">
-                        <h4>WhatsApp / Phone</h4>
-                        <p id="displayPhone">Loading...</p>
-                    </div>
-                    <div class="contact-info-item">
-                        <h4>Business Email</h4>
-                        <p id="displayEmail">Loading...</p>
-                    </div>
-                    <div class="contact-info-item">
-                        <h4>Headquarters</h4>
-                        <p id="displayAddress">Loading...</p>
-                    </div>
-                    <div class="contact-info-item">
-                        <h4>Follow Us</h4>
-                        <div class="social-links-contact">
-                            <a href="#" id="displayInsta" target="_blank" style="display: none;">Instagram</a>
-                            <a href="#" id="displayFB" target="_blank" style="display: none;">Facebook</a>
-                        </div>
-                    </div>
+        <div class="contact-grid">
+            <div class="contact-details">
+                <div class="contact-info-item">
+                    <h4>WhatsApp / Phone</h4>
+                    <p id="displayPhone">Loading...</p>
                 </div>
-
-                <div class="contact-graphic"
-                    style="background: #121212; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; padding: 3rem;">
-                    <div style="text-align: center;">
-                        <h3 style="font-size: 2rem; margin-bottom: 1rem;">Experience Excellence</h3>
-                        <p style="opacity: 0.7;">Our support team is available mon-fri to assist you with any inquiries.
-                        </p>
+                <div class="contact-info-item">
+                    <h4>Business Email</h4>
+                    <p id="displayEmail">Loading...</p>
+                </div>
+                <div class="contact-info-item">
+                    <h4>Headquarters</h4>
+                    <p id="displayAddress">Loading...</p>
+                </div>
+                <div class="contact-info-item">
+                    <h4>Follow Us</h4>
+                    <div class="social-links-contact">
+                        <a href="#" id="displayInsta" target="_blank" style="display: none;">Instagram</a>
+                        <a href="#" id="displayFB" target="_blank" style="display: none;">Facebook</a>
                     </div>
                 </div>
             </div>
-        </main>
 
-        <footer style="margin-top: 5rem; padding: 40px 0; border-top: 1px solid #eee;">
-            <div class="container"
-                style="display: flex; justify-content: space-between; align-items: center; opacity: 0.6; font-size: 0.8rem;">
-                <p>&copy; 2026 KHADER. All Rights Reserved.</p>
+            <div class="contact-graphic"
+                style="background: #121212; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; padding: 3rem;">
+                <div style="text-align: center;">
+                    <h3 style="font-size: 2rem; margin-bottom: 1rem;">Experience Excellence</h3>
+                    <p style="opacity: 0.7;">Our support team is available mon-fri to assist you with any inquiries.
+                    </p>
+                </div>
             </div>
-        </footer>
+        </div>
+    </main>
 
-        <script type="module" src="contact.js"></script>
+    <footer style="margin-top: 5rem; padding: 40px 0; border-top: 1px solid #eee;">
+        <div class="container" style="text-align: center; opacity: 0.6; font-size: 0.8rem;">
+            <p>&copy; 2026 KHADER. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script type="module" src="contact.js"></script>
+    <script src="script.js"></script>
 </body>
 
 </html>

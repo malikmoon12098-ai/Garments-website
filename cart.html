@@ -145,9 +145,7 @@
 </head>
 
 <body>
-    <a href="shop.html" class="back-btn" title="Back to Shop">←</a>
-
-    <header id="header" class="scrolled">
+    <header id="header">
         <nav class="container">
             <div class="logo">
                 <a href="index.html">
@@ -161,92 +159,91 @@
                 <li><a href="contact.html">Contact</a></li>
             </ul>
         </nav>
-        <div class="back-btn-container">
-            <a href="index.html" class="back-btn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                    stroke-linejoin="round">
-                    <line x1="19" y1="12" x2="5" y2="12"></line>
-                    <polyline points="12 19 5 12 12 5"></polyline>
-                </svg>
-                Back to Home
-            </a>
+    </header>
+
+    <div class="back-btn-container">
+        <a href="index.html" class="back-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            Back to Home
+        </a>
+    </div>
+
+    <main class="cart-page container">
+        <div class="section-header">
+            <h2>Your Cart</h2>
         </div>
 
-
-        <main class="cart-page container">
-            <div class="section-header">
-                <h2>Your Cart</h2>
+        <div class="cart-container">
+            <div id="cartList">
+                <!-- Items will be loaded here -->
             </div>
 
-            <div class="cart-container">
-                <div id="cartList">
-                    <!-- Items will be loaded here -->
+            <div id="cartSummary" class="cart-summary" style="display: none;">
+                <div class="total-row">
+                    Total: <span id="cartTotal">Rs. 0</span>
                 </div>
+                <button id="checkoutBtn" class="btn-checkout">Checkout Now</button>
+            </div>
+        </div>
 
-                <div id="cartSummary" class="cart-summary" style="display: none;">
-                    <div class="total-row">
-                        Total: <span id="cartTotal">Rs. 0</span>
+        <!-- ORDER SELECTION MODAL (NOW DIRECT ORDER FORM) -->
+        <div id="orderModal" class="order-modal">
+            <div class="order-modal-content" style="max-width: 500px; text-align: left;">
+                <span id="closeModal" class="close-order-modal">&times;</span>
+                <h2 style="text-align: center;">Complete Your Order</h2>
+                <p style="text-align: center; font-size: 0.9rem; color: #666; margin-bottom: 20px;">Please enter
+                    your
+                    delivery details to confirm your cart order.</p>
+
+                <form id="directOrderForm" class="social-order-btns">
+                    <div class="form-group">
+                        <label style="font-weight: 600; font-size: 0.85rem; display: block; margin-bottom: 5px;">Full
+                            Name</label>
+                        <input type="text" id="custName" required placeholder="Enter your full name"
+                            style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
                     </div>
-                    <button id="checkoutBtn" class="btn-checkout">Checkout Now</button>
-                </div>
-            </div>
-
-            <!-- ORDER SELECTION MODAL (NOW DIRECT ORDER FORM) -->
-            <div id="orderModal" class="order-modal">
-                <div class="order-modal-content" style="max-width: 500px; text-align: left;">
-                    <span id="closeModal" class="close-order-modal">&times;</span>
-                    <h2 style="text-align: center;">Complete Your Order</h2>
-                    <p style="text-align: center; font-size: 0.9rem; color: #666; margin-bottom: 20px;">Please enter
-                        your
-                        delivery details to confirm your cart order.</p>
-
-                    <form id="directOrderForm" class="social-order-btns">
-                        <div class="form-group">
-                            <label
-                                style="font-weight: 600; font-size: 0.85rem; display: block; margin-bottom: 5px;">Full
-                                Name</label>
-                            <input type="text" id="custName" required placeholder="Enter your full name"
-                                style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
-                        </div>
-                        <div class="form-group">
-                            <label
-                                style="font-weight: 600; font-size: 0.85rem; display: block; margin-bottom: 5px;">Active
-                                Phone Number</label>
-                            <input type="tel" id="custPhone" required placeholder="e.g. 0300 1234567"
-                                style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
-                        </div>
-                        <div class="form-group">
-                            <label
-                                style="font-weight: 600; font-size: 0.85rem; display: block; margin-bottom: 5px;">Shipping
-                                Address</label>
-                            <textarea id="custAddress" required placeholder="House #, Street, Area name" rows="2"
-                                style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit;"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label
-                                style="font-weight: 600; font-size: 0.85rem; display: block; margin-bottom: 5px;">City</label>
-                            <input type="text" id="custCity" required placeholder="e.g. Karachi"
-                                style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
-                        </div>
-
-                        <button type="submit" id="confirmOrderBtn" class="btn btn-primary"
-                            style="width: 100%; padding: 15px; margin-top: 10px; font-weight: 800; text-transform: uppercase; background: #121212;">Confirm
-                            Direct Order</button>
-                    </form>
-
-                    <div id="orderSuccess" style="display: none; text-align: center; padding: 20px;">
-                        <h3 style="color: #2563eb;">✔ Order Confirmed!</h3>
-                        <p style="margin-top: 10px; color: #444;">Your cart items have been ordered. We will contact you
-                            soon.</p>
-                        <button onclick="localStorage.removeItem('cart'); location.reload();" class="btn btn-secondary"
-                            style="margin-top: 20px; width: 100%;">Close</button>
+                    <div class="form-group">
+                        <label style="font-weight: 600; font-size: 0.85rem; display: block; margin-bottom: 5px;">Active
+                            Phone Number</label>
+                        <input type="tel" id="custPhone" required placeholder="e.g. 0300 1234567"
+                            style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
                     </div>
+                    <div class="form-group">
+                        <label
+                            style="font-weight: 600; font-size: 0.85rem; display: block; margin-bottom: 5px;">Shipping
+                            Address</label>
+                        <textarea id="custAddress" required placeholder="House #, Street, Area name" rows="2"
+                            style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit;"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label
+                            style="font-weight: 600; font-size: 0.85rem; display: block; margin-bottom: 5px;">City</label>
+                        <input type="text" id="custCity" required placeholder="e.g. Karachi"
+                            style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
+                    </div>
+
+                    <button type="submit" id="confirmOrderBtn" class="btn btn-primary"
+                        style="width: 100%; padding: 15px; margin-top: 10px; font-weight: 800; text-transform: uppercase; background: #121212;">Confirm
+                        Direct Order</button>
+                </form>
+
+                <div id="orderSuccess" style="display: none; text-align: center; padding: 20px;">
+                    <h3 style="color: #2563eb;">✔ Order Confirmed!</h3>
+                    <p style="margin-top: 10px; color: #444;">Your cart items have been ordered. We will contact you
+                        soon.</p>
+                    <button onclick="localStorage.removeItem('cart'); location.reload();" class="btn btn-secondary"
+                        style="margin-top: 20px; width: 100%;">Close</button>
                 </div>
             </div>
-        </main>
+        </div>
+    </main>
 
-        <script type="module" src="cart.js"></script>
-        <script src="script.js"></script>
+    <script type="module" src="cart.js"></script>
+    <script src="script.js"></script>
 </body>
 
 </html>

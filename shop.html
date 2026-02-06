@@ -18,9 +18,7 @@
 </head>
 
 <body>
-    <a href="index.html" class="back-btn" title="Back to Home">←</a>
-
-    <header id="header" class="scrolled">
+    <header id="header">
         <nav class="container">
             <div class="logo">
                 <a href="index.html">
@@ -38,68 +36,69 @@
                 <span></span>
             </button>
         </nav>
-        <div class="back-btn-container">
-            <a href="index.html" class="back-btn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                    stroke-linejoin="round">
-                    <line x1="19" y1="12" x2="5" y2="12"></line>
-                    <polyline points="12 19 5 12 12 5"></polyline>
-                </svg>
-                Back to Home
-            </a>
+    </header>
+
+    <div class="back-btn-container">
+        <a href="index.html" class="back-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            Back to Home
+        </a>
+    </div>
+
+    <main class="shop-page container">
+        <div class="section-header">
+            <h2>The Signature Shop</h2>
+            <p>Refined essentials for the visionary man.</p>
         </div>
 
-
-        <main class="shop-page container">
-            <div class="section-header">
-                <h2>The Signature Shop</h2>
-                <p>Refined essentials for the visionary man.</p>
+        <div class="search-container">
+            <div class="search-bar">
+                <input type="text" id="shopSearch" placeholder="Search by name or category...">
             </div>
+        </div>
 
-            <div class="search-container">
-                <div class="search-bar">
-                    <input type="text" id="shopSearch" placeholder="Search by name or category...">
-                </div>
+        <div class="filter-tabs" id="categoryTabs">
+            <button class="filter-btn active" data-category="All">All</button>
+            <!-- Categories will be added here dynamically -->
+        </div>
+
+        <div id="shopGrid" class="product-grid">
+            <!-- Skeletons while loading -->
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <!-- Products will be loaded here -->
+            <p style="text-align: center; width: 100%;">Loading our collection...</p>
+        </div>
+
+        <div id="noResults" style="text-align: center; padding: 5rem 0; display: none;">
+            <h3 style="margin-bottom: 1rem;">No products found</h3>
+            <p>Try searching for something else or change the category.</p>
+        </div>
+    </main>
+
+    <footer id="contact" style="margin-top: 5rem;">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2026 KHADER. All Rights Reserved.</p>
             </div>
+        </div>
+    </footer>
 
-            <div class="filter-tabs" id="categoryTabs">
-                <button class="filter-btn active" data-category="All">All</button>
-                <!-- Categories will be added here dynamically -->
-            </div>
+    <a href="cart.html" class="floating-cart">
+        <span class="cart-icon">🛒</span>
+        <span id="cartBadge" class="cart-badge">0</span>
+    </a>
 
-            <div id="shopGrid" class="product-grid">
-                <!-- Skeletons while loading -->
-                <div class="skeleton-card"></div>
-                <div class="skeleton-card"></div>
-                <div class="skeleton-card"></div>
-                <div class="skeleton-card"></div>
-                <div class="skeleton-card"></div>
-                <div class="skeleton-card"></div>
-                <!-- Products will be loaded here -->
-                <p style="text-align: center; width: 100%;">Loading our collection...</p>
-            </div>
-
-            <div id="noResults" style="text-align: center; padding: 5rem 0; display: none;">
-                <h3 style="margin-bottom: 1rem;">No products found</h3>
-                <p>Try searching for something else or change the category.</p>
-            </div>
-        </main>
-
-        <footer id="contact" style="margin-top: 5rem;">
-            <div class="container">
-                <div class="footer-bottom">
-                    <p>&copy; 2026 KHADER. All Rights Reserved.</p>
-                </div>
-            </div>
-        </footer>
-
-        <a href="cart.html" class="floating-cart">
-            <span class="cart-icon">🛒</span>
-            <span id="cartBadge" class="cart-badge">0</span>
-        </a>
-
-        <script type="module" src="shop.js"></script>
-        <script src="script.js"></script>
+    <script type="module" src="shop.js"></script>
+    <script src="script.js"></script>
 </body>
 
 </html>

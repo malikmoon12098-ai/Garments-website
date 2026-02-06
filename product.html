@@ -96,9 +96,7 @@
 </head>
 
 <body>
-    <a href="shop.html" class="back-btn" title="Back to Shop">←</a>
-
-    <header id="header" class="scrolled">
+    <header id="header">
         <nav class="container">
             <div class="logo">
                 <a href="index.html">
@@ -116,156 +114,156 @@
                 <span></span>
             </button>
         </nav>
-        <div class="back-btn-container">
-            <a href="shop.html" class="back-btn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                    stroke-linejoin="round">
-                    <line x1="19" y1="12" x2="5" y2="12"></line>
-                    <polyline points="12 19 5 12 12 5"></polyline>
-                </svg>
-                Back to Shop
-            </a>
+    </header>
+
+    <div class="back-btn-container">
+        <a href="shop.html" class="back-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            Back to Shop
+        </a>
+    </div>
+
+    <main class="product-details-page container">
+        <div id="loading" style="text-align: center; padding: 100px;">
+            <p>Loading product details...</p>
         </div>
 
-
-        <main class="product-details-page container">
-            <div id="loading" style="text-align: center; padding: 100px;">
-                <p>Loading product details...</p>
+        <div id="productContent" class="details-grid" style="display: none;">
+            <div class="image-section">
+                <img id="displayImage" src="" alt="Product Image" class="main-image">
             </div>
+            <div class="product-meta">
+                <span id="displayCategory" class="p-category">Category</span>
+                <h1 id="displayTitle" class="p-title">Product Name</h1>
+                <span id="displayPrice" class="p-price">Rs. 0</span>
+                <p id="displayDesc" class="p-desc">Description goes here...</p>
 
-            <div id="productContent" class="details-grid" style="display: none;">
-                <div class="image-section">
-                    <img id="displayImage" src="" alt="Product Image" class="main-image">
-                </div>
-                <div class="product-meta">
-                    <span id="displayCategory" class="p-category">Category</span>
-                    <h1 id="displayTitle" class="p-title">Product Name</h1>
-                    <span id="displayPrice" class="p-price">Rs. 0</span>
-                    <p id="displayDesc" class="p-desc">Description goes here...</p>
-
-                    <div class="action-btns">
-                        <div class="qty-selector"
-                            style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
-                            <span style="font-weight: 600; font-size: 0.9rem;">Quantity:</span>
-                            <div
-                                style="display: flex; align-items: center; border: 1px solid #ddd; border-radius: 4px; overflow: hidden;">
-                                <button id="qtyMinus"
-                                    style="padding: 5px 12px; background: #f5f5f5; border: none; cursor: pointer; font-weight: bold;">-</button>
-                                <input type="number" id="pQty" value="1" min="1" max="99" readonly
-                                    style="width: 40px; text-align: center; border: none; font-weight: bold; background: white;">
-                                <button id="qtyPlus"
-                                    style="padding: 5px 12px; background: #f5f5f5; border: none; cursor: pointer; font-weight: bold;">+</button>
-                            </div>
+                <div class="action-btns">
+                    <div class="qty-selector"
+                        style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
+                        <span style="font-weight: 600; font-size: 0.9rem;">Quantity:</span>
+                        <div
+                            style="display: flex; align-items: center; border: 1px solid #ddd; border-radius: 4px; overflow: hidden;">
+                            <button id="qtyMinus"
+                                style="padding: 5px 12px; background: #f5f5f5; border: none; cursor: pointer; font-weight: bold;">-</button>
+                            <input type="number" id="pQty" value="1" min="1" max="99" readonly
+                                style="width: 40px; text-align: center; border: none; font-weight: bold; background: white;">
+                            <button id="qtyPlus"
+                                style="padding: 5px 12px; background: #f5f5f5; border: none; cursor: pointer; font-weight: bold;">+</button>
                         </div>
-                        <button id="addToCartBtn" class="btn btn-secondary"
-                            style="border-color: var(--primary); color: var(--primary);">Add to Cart</button>
-                        <button id="buyNowBtn" class="btn btn-whatsapp">Buy Now</button>
-                        <p style="font-size: 0.8rem; color: #888; margin-top: 5px; text-align: center;">Direct Checkout
-                            — No
-                            redirection needed</p>
                     </div>
+                    <button id="addToCartBtn" class="btn btn-secondary"
+                        style="border-color: var(--primary); color: var(--primary);">Add to Cart</button>
+                    <button id="buyNowBtn" class="btn btn-whatsapp">Buy Now</button>
+                    <p style="font-size: 0.8rem; color: #888; margin-top: 5px; text-align: center;">Direct Checkout
+                        — No
+                        redirection needed</p>
                 </div>
             </div>
+        </div>
 
-            <!-- DIRECT ORDER MODAL -->
-            <div id="orderModal" class="order-modal"
-                style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; justify-content: center; align-items: center;">
-                <div class="order-modal-content"
-                    style="background: white; padding: 30px; border-radius: 15px; width: 90%; max-width: 450px; position: relative;">
-                    <span id="closeModal" class="close-order-modal"
-                        style="position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer;">&times;</span>
-                    <h2 style="text-align: center; margin-bottom: 5px;">Delivery Details</h2>
-                    <p style="text-align: center; color: #666; font-size: 0.85rem; margin-bottom: 25px;">Enter details
-                        to
-                        place your order directly.</p>
+        <!-- DIRECT ORDER MODAL -->
+        <div id="orderModal" class="order-modal"
+            style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; justify-content: center; align-items: center;">
+            <div class="order-modal-content"
+                style="background: white; padding: 30px; border-radius: 15px; width: 90%; max-width: 450px; position: relative;">
+                <span id="closeModal" class="close-order-modal"
+                    style="position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer;">&times;</span>
+                <h2 style="text-align: center; margin-bottom: 5px;">Delivery Details</h2>
+                <p style="text-align: center; color: #666; font-size: 0.85rem; margin-bottom: 25px;">Enter details
+                    to
+                    place your order directly.</p>
 
-                    <div id="orderFormContainer">
-                        <form id="directOrderForm" style="display: flex; flex-direction: column; gap: 15px;">
-                            <div class="form-group">
-                                <label
-                                    style="display: block; font-size: 0.8rem; color: #444; margin-bottom: 5px; font-weight: 600;">Full
-                                    Name</label>
-                                <input type="text" id="custName" required placeholder="Ex. Ali Khan"
-                                    style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px;">
-                            </div>
-                            <div class="form-group">
-                                <label
-                                    style="display: block; font-size: 0.8rem; color: #444; margin-bottom: 5px; font-weight: 600;">Phone
-                                    Number (Important)</label>
-                                <input type="tel" id="custPhone" required placeholder="Ex. 03001234567"
-                                    style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px;">
-                                <p id="phoneError"
-                                    style="color: red; font-size: 0.75rem; margin-top: 5px; display: none;">
-                                    You have a pending order for this item.</p>
-                            </div>
-                            <div class="form-group">
-                                <label
-                                    style="display: block; font-size: 0.8rem; color: #444; margin-bottom: 5px; font-weight: 600;">Detailed
-                                    Address</label>
-                                <textarea id="custAddress" required placeholder="House/Shop #, Street, Area" rows="2"
-                                    style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit;"></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label
-                                    style="display: block; font-size: 0.8rem; color: #444; margin-bottom: 5px; font-weight: 600;">City</label>
-                                <input type="text" id="custCity" required placeholder="Ex. Karachi"
-                                    style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px;">
-                            </div>
-                            <button type="submit" id="confirmOrderBtn" class="btn btn-primary"
-                                style="width: 100%; background: #000; color: #fff; padding: 15px; border-radius: 6px; font-weight: 800; cursor: pointer;">Place
-                                Order Now</button>
-                        </form>
-                    </div>
+                <div id="orderFormContainer">
+                    <form id="directOrderForm" style="display: flex; flex-direction: column; gap: 15px;">
+                        <div class="form-group">
+                            <label
+                                style="display: block; font-size: 0.8rem; color: #444; margin-bottom: 5px; font-weight: 600;">Full
+                                Name</label>
+                            <input type="text" id="custName" required placeholder="Ex. Ali Khan"
+                                style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px;">
+                        </div>
+                        <div class="form-group">
+                            <label
+                                style="display: block; font-size: 0.8rem; color: #444; margin-bottom: 5px; font-weight: 600;">Phone
+                                Number (Important)</label>
+                            <input type="tel" id="custPhone" required placeholder="Ex. 03001234567"
+                                style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px;">
+                            <p id="phoneError" style="color: red; font-size: 0.75rem; margin-top: 5px; display: none;">
+                                You have a pending order for this item.</p>
+                        </div>
+                        <div class="form-group">
+                            <label
+                                style="display: block; font-size: 0.8rem; color: #444; margin-bottom: 5px; font-weight: 600;">Detailed
+                                Address</label>
+                            <textarea id="custAddress" required placeholder="House/Shop #, Street, Area" rows="2"
+                                style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit;"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label
+                                style="display: block; font-size: 0.8rem; color: #444; margin-bottom: 5px; font-weight: 600;">City</label>
+                            <input type="text" id="custCity" required placeholder="Ex. Karachi"
+                                style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px;">
+                        </div>
+                        <button type="submit" id="confirmOrderBtn" class="btn btn-primary"
+                            style="width: 100%; background: #000; color: #fff; padding: 15px; border-radius: 6px; font-weight: 800; cursor: pointer;">Place
+                            Order Now</button>
+                    </form>
+                </div>
 
-                    <div id="orderSuccess" style="display: none; text-align: center; padding: 20px;">
-                        <span style="font-size: 50px;">📦</span>
-                        <h2 style="color: #2ecc71; margin: 15px 0 10px;">Order Received!</h2>
-                        <p style="color: #666; line-height: 1.5;">Your order for <b id="successProductName"></b> has
-                            been
-                            placed successfully. We'll contact you soon!</p>
-                        <button onclick="location.reload()" class="btn btn-secondary"
-                            style="margin-top: 25px; width: 100%; border: 1px solid #000;">Back to Shopping</button>
-                    </div>
+                <div id="orderSuccess" style="display: none; text-align: center; padding: 20px;">
+                    <span style="font-size: 50px;">📦</span>
+                    <h2 style="color: #2ecc71; margin: 15px 0 10px;">Order Received!</h2>
+                    <p style="color: #666; line-height: 1.5;">Your order for <b id="successProductName"></b> has
+                        been
+                        placed successfully. We'll contact you soon!</p>
+                    <button onclick="location.reload()" class="btn btn-secondary"
+                        style="margin-top: 25px; width: 100%; border: 1px solid #000;">Back to Shopping</button>
                 </div>
             </div>
-            <!-- SOCIAL CONTACT MODAL -->
-            <div id="socialContactModal" class="order-modal"
-                style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2001; justify-content: center; align-items: center;">
-                <div class="order-modal-content"
-                    style="background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 400px; position: relative; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
-                    <span id="closeSocialModal"
-                        style="position: absolute; top: 15px; right: 20px; font-size: 28px; cursor: pointer; color: #888;">&times;</span>
-                    <h2 style="margin-bottom: 10px; color: #000; font-weight: 800;">Order via Social</h2>
-                    <p style="color: #666; font-size: 0.9rem; margin-bottom: 25px;">Choose a platform to send product
-                        details
-                        automatically.</p>
+        </div>
+        <!-- SOCIAL CONTACT MODAL -->
+        <div id="socialContactModal" class="order-modal"
+            style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2001; justify-content: center; align-items: center;">
+            <div class="order-modal-content"
+                style="background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 400px; position: relative; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+                <span id="closeSocialModal"
+                    style="position: absolute; top: 15px; right: 20px; font-size: 28px; cursor: pointer; color: #888;">&times;</span>
+                <h2 style="margin-bottom: 10px; color: #000; font-weight: 800;">Order via Social</h2>
+                <p style="color: #666; font-size: 0.9rem; margin-bottom: 25px;">Choose a platform to send product
+                    details
+                    automatically.</p>
 
-                    <div style="display: flex; flex-direction: column; gap: 12px;">
-                        <button id="buyWhatsApp" class="btn"
-                            style="display: none; background: #25D366; color: white; padding: 16px; border-radius: 10px; font-weight: 700; cursor: pointer; border: none; font-size: 1.05rem; transition: transform 0.2s;">
-                            WhatsApp
-                        </button>
-                        <button id="buyFacebook" class="btn"
-                            style="display: none; background: #1877F2; color: white; padding: 16px; border-radius: 10px; font-weight: 700; cursor: pointer; border: none; font-size: 1.05rem; transition: transform 0.2s;">
-                            Facebook Messenger
-                        </button>
-                        <button id="buyInstagram" class="btn"
-                            style="display: none; background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%); color: white; padding: 16px; border-radius: 10px; font-weight: 700; cursor: pointer; border: none; font-size: 1.05rem; transition: transform 0.2s;">
-                            Instagram Direct
-                        </button>
-                    </div>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <button id="buyWhatsApp" class="btn"
+                        style="display: none; background: #25D366; color: white; padding: 16px; border-radius: 10px; font-weight: 700; cursor: pointer; border: none; font-size: 1.05rem; transition: transform 0.2s;">
+                        WhatsApp
+                    </button>
+                    <button id="buyFacebook" class="btn"
+                        style="display: none; background: #1877F2; color: white; padding: 16px; border-radius: 10px; font-weight: 700; cursor: pointer; border: none; font-size: 1.05rem; transition: transform 0.2s;">
+                        Facebook Messenger
+                    </button>
+                    <button id="buyInstagram" class="btn"
+                        style="display: none; background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%); color: white; padding: 16px; border-radius: 10px; font-weight: 700; cursor: pointer; border: none; font-size: 1.05rem; transition: transform 0.2s;">
+                        Instagram Direct
+                    </button>
                 </div>
             </div>
-        </main>
+        </div>
+    </main>
 
-        <footer style="margin-top: 5rem; padding: 40px 0; border-top: 1px solid #eee;">
-            <div class="container" style="text-align: center; opacity: 0.6; font-size: 0.8rem;">
-                <p>&copy; 2026 KHADER. All Rights Reserved.</p>
-            </div>
-        </footer>
+    <footer style="margin-top: 5rem; padding: 40px 0; border-top: 1px solid #eee;">
+        <div class="container" style="text-align: center; opacity: 0.6; font-size: 0.8rem;">
+            <p>&copy; 2026 KHADER. All Rights Reserved.</p>
+        </div>
+    </footer>
 
-        <script type="module" src="product.js"></script>
-        <script src="script.js"></script>
+    <script type="module" src="product.js"></script>
+    <script src="script.js"></script>
 </body>
 
 </html>
