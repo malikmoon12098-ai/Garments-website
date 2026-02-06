@@ -12,26 +12,28 @@ async function loadContactPage() {
             document.getElementById('displayEmail').textContent = data.email || 'Not available';
             document.getElementById('displayAddress').textContent = data.address || 'Not available';
 
-            if (data.insta) {
-                document.getElementById('itemInsta').style.display = 'block';
-                const instaLink = document.getElementById('displayInsta');
+            const instaLink = document.getElementById('displayInsta');
+            if (data.insta && data.insta.trim() !== "") {
                 instaLink.href = data.insta;
-
-                // Try to extract handle for a cleaner look
                 try {
                     const url = new URL(data.insta);
                     const handle = url.pathname.replace(/\//g, '');
-                    if (handle) instaLink.textContent = `@${handle}`;
+                    instaLink.textContent = handle ? `@${handle}` : 'Visit Instagram';
                 } catch (e) {
                     instaLink.textContent = 'Visit Instagram';
                 }
+            } else {
+                instaLink.textContent = 'Not linked';
+                instaLink.href = '#';
             }
 
-            if (data.fb) {
-                document.getElementById('itemFB').style.display = 'block';
-                const fbLink = document.getElementById('displayFB');
+            const fbLink = document.getElementById('displayFB');
+            if (data.fb && data.fb.trim() !== "") {
                 fbLink.href = data.fb;
                 fbLink.textContent = 'Chat on Facebook';
+            } else {
+                fbLink.textContent = 'Not linked';
+                fbLink.href = '#';
             }
         } else {
             document.getElementById('displayPhone').textContent = 'Contact details coming soon';
