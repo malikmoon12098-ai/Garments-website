@@ -377,6 +377,30 @@ header.admin-header .logo:hover img {
     gap: 25px;
 }
 
+/* Filter Tabs */
+.filter-tab {
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.6);
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.filter-tab:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.filter-tab.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+    box-shadow: 0 4px 15px rgba(115, 103, 240, 0.3);
+}
+
 /* --- TOASTS (Glassy) --- */
 .toast-container {
     position: fixed;

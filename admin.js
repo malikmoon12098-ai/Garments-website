@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
         initImageUpload();
     } else if (currentPage === 'admin-inventory.html') {
         loadProducts();
+        initEditProductForm();
     } else if (currentPage === 'admin-alerts.html') {
         loadAlerts();
     } else if (currentPage === 'admin-messages.html') {
@@ -190,6 +191,8 @@ function initImageUpload() {
 }
 
 // --- INVENTORY LOGIC ---
+let currentInventoryCategory = 'all';
+
 async function loadProducts() {
     const productList = document.getElementById('productList');
     if (!productList) return;
@@ -197,30 +200,74 @@ async function loadProducts() {
     try {
         const querySnapshot = await getDocs(query(collection(db, "products")));
         productList.innerHTML = '';
+
+        const categories = new Set(['all']);
+        const filteredDocs = [];
+
         querySnapshot.forEach(docSnap => {
             const product = docSnap.data();
-            const id = docSnap.id;
+            if (product.category) categories.add(product.category);
+
+            if (currentInventoryCategory === 'all' || product.category === currentInventoryCategory) {
+                filteredDocs.push({ id: docSnap.id, data: product });
+            }
+        });
+
+        renderCategoryTabs(Array.from(categories));
+
+        if (filteredDocs.length === 0) {
+            productList.innerHTML = '<p>No products found in this category.</p>';
+            return;
+        }
+
+        filteredDocs.forEach(item => {
+            const product = item.data;
+            const id = item.id;
             const inStock = product.inStock !== false;
             const div = document.createElement('div');
             div.className = 'admin-item';
             div.innerHTML = `
                 <img src="${product.image}" onerror="this.src='https://via.placeholder.com/150'">
                 <h4>${escapeHTML(product.name)}</h4>
-                <p>${escapeHTML(product.category)} - Rs. ${parseFloat(product.price).toLocaleString()}<br>
-                <strong>Stock:</strong> ${product.stock || 0} (Alert at: ${product.threshold || 0})<br>
-                <span style="color: ${inStock ? '#25D366' : '#ff4d4d'};">${inStock ? '● In Stock' : '● Out of Stock'}</span></p>
+                <p><strong>Category:</strong> ${escapeHTML(product.category)}<br>
+                <strong>Price:</strong> Rs. ${parseFloat(product.price).toLocaleString()}<br>
+                <strong>Stock:</strong> ${product.stock || 0} (Limit: ${product.threshold || 0})<br>
+                <span style="color: ${inStock ? '#25D366' : '#ff4d4d'}; font-weight: bold;">${inStock ? '● In Stock' : '● Out of Stock'}</span></p>
                 <div style="display: flex; gap: 5px; margin-top: 10px;">
-                    <button class="toggle-stock" data-id="${id}" data-status="${inStock}" style="background:#333; color:white; border:none; padding:5px; border-radius:4px; cursor:pointer; flex:1;">${inStock ? 'Mark Out' : 'Mark In'}</button>
-                    <button class="delete-product" data-id="${id}" style="background:rgba(255,77,77,0.1); color:#ff4d4d; border:1px solid #ff4d4d; padding:5px; border-radius:4px; cursor:pointer; flex:1;">Remove</button>
+                    <button class="edit-product" data-id="${id}" style="background:var(--accent); color:white; border:none; padding:8px; border-radius:6px; cursor:pointer; flex:1; font-weight:600;">Edit</button>
+                    <button class="toggle-stock" data-id="${id}" data-status="${inStock}" style="background:#333; color:white; border:none; padding:8px; border-radius:6px; cursor:pointer; flex:1;">${inStock ? 'Mark Out' : 'Mark In'}</button>
+                    <button class="delete-product" data-id="${id}" style="background:rgba(255,77,77,0.1); color:#ff4d4d; border:1px solid #ff4d4d; padding:8px; border-radius:6px; cursor:pointer; flex:0.5;">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    </button>
                 </div>
-`;
+            `;
             productList.appendChild(div);
         });
         attachProductListeners();
     } catch (e) { console.error(e); }
 }
 
+function renderCategoryTabs(categories) {
+    const filterContainer = document.getElementById('adminCategoryFilter');
+    if (!filterContainer) return;
+    filterContainer.innerHTML = '';
+    categories.sort().forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = `filter-tab ${currentInventoryCategory === cat ? 'active' : ''}`;
+        btn.textContent = cat === 'all' ? 'All Items' : cat;
+        btn.onclick = () => {
+            currentInventoryCategory = cat;
+            loadProducts();
+        };
+        filterContainer.appendChild(btn);
+    });
+}
+
 function attachProductListeners() {
+    document.querySelectorAll('.edit-product').forEach(btn => {
+        btn.onclick = () => openEditModal(btn.dataset.id);
+    });
+
     document.querySelectorAll('.toggle-stock').forEach(btn => {
         btn.onclick = async () => {
             const id = btn.dataset.id;
@@ -467,4 +514,51 @@ async function loadAlerts() {
         });
         if (count === 0) alertsList.innerHTML = '<p>✅ All products are well-stocked. No alerts.</p>';
     } catch (e) { console.error(e); }
+}
+async function openEditModal(id) {
+    const modal = document.getElementById('editProductModal');
+    if (!modal) return;
+    try {
+        const docSnap = await getDoc(doc(db, "products", id));
+        if (docSnap.exists()) {
+            const product = docSnap.data();
+            document.getElementById('editProdId').value = id;
+            document.getElementById('editName').value = product.name || '';
+            document.getElementById('editPrice').value = product.price || 0;
+            document.getElementById('editCategory').value = product.category || '';
+            document.getElementById('editImage').value = product.image || '';
+            document.getElementById('editStock').value = product.stock || 0;
+            document.getElementById('editThreshold').value = product.threshold || 0;
+            modal.style.display = 'flex';
+        }
+    } catch (e) { showToast("Error loading product", "error"); }
+}
+
+function initEditProductForm() {
+    const form = document.getElementById('editProductForm');
+    const closeBtn = document.getElementById('closeEditModal');
+    if (closeBtn) {
+        closeBtn.onclick = () => document.getElementById('editProductModal').style.display = 'none';
+    }
+    if (!form) return;
+    form.onsubmit = async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('editProdId').value;
+        const stock = parseInt(document.getElementById('editStock').value) || 0;
+        const updateData = {
+            name: document.getElementById('editName').value,
+            price: parseFloat(document.getElementById('editPrice').value),
+            category: document.getElementById('editCategory').value,
+            image: document.getElementById('editImage').value,
+            stock: stock,
+            threshold: parseInt(document.getElementById('editThreshold').value) || 0,
+            inStock: stock > 0
+        };
+        try {
+            await updateDoc(doc(db, "products", id), updateData);
+            showToast("Product Updated!", "success");
+            document.getElementById('editProductModal').style.display = 'none';
+            loadProducts();
+        } catch (e) { showToast(e.message, "error"); }
+    };
 }
