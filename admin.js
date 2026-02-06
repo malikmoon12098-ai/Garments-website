@@ -528,7 +528,7 @@ function openConvertModal(data) {
     document.getElementById('convProductId').value = data.pid;
     document.getElementById('convProductName').value = data.product;
     document.getElementById('convQty').value = data.qty;
-    document.getElementById('convChatUrl').value = data.url;
+    // document.getElementById('convChatUrl').value = data.url; // REMOVED: Element deleted from HTML
 
     // Show modal
     modal.style.display = 'flex';
