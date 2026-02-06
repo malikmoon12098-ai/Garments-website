@@ -72,12 +72,62 @@ if (checkoutBtn) {
     };
 }
 
+// WhatsApp Checkout
+const checkoutWhatsAppBtn = document.getElementById('checkoutWhatsAppBtn');
+if (checkoutWhatsAppBtn) {
+    checkoutWhatsAppBtn.onclick = async () => {
+        if (cart.length === 0) return;
+
+        checkoutWhatsAppBtn.textContent = "Connecting...";
+        checkoutWhatsAppBtn.disabled = true;
+
+        try {
+            const contactSnap = await getDoc(doc(db, "settings", "contact"));
+            checkoutWhatsAppBtn.textContent = "Checkout via WhatsApp";
+            checkoutWhatsAppBtn.disabled = false;
+
+            if (contactSnap.exists()) {
+                const data = contactSnap.data();
+                if (data.phone) {
+                    let totalBill = 0;
+                    let summaryString = "Assalam o Alaikum! I want to order these items from my cart:\n\n";
+
+                    cart.forEach((item, index) => {
+                        const qty = item.qty || 1;
+                        const price = parseFloat(item.price);
+                        totalBill += price * qty;
+                        summaryString += `${index + 1}. *${item.name}*\n   Qty: ${qty} | Price: Rs. ${price.toLocaleString()}\n\n`;
+                    });
+
+                    summaryString += `*Total Amount: Rs. ${totalBill.toLocaleString()}*`;
+
+                    let cleanPhone = data.phone.replace(/\D/g, '');
+                    if (cleanPhone.startsWith('0')) {
+                        cleanPhone = '92' + cleanPhone.substring(1);
+                    } else if (!cleanPhone.startsWith('92')) {
+                        cleanPhone = '92' + cleanPhone;
+                    }
+
+                    const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(summaryString)}`;
+                    window.open(url, '_blank');
+                } else {
+                    showToast("Store WhatsApp number not set.", "error");
+                }
+            }
+        } catch (err) {
+            console.error(err);
+            checkoutWhatsAppBtn.textContent = "Checkout via WhatsApp";
+            checkoutWhatsAppBtn.disabled = false;
+        }
+    };
+}
 if (closeModal) {
     closeModal.onclick = () => {
         orderModal.style.display = 'none';
         document.body.style.overflow = 'auto';
     };
 }
+
 
 // Direct Order Submission
 if (directOrderForm) {

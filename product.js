@@ -141,7 +141,12 @@ if (buyNowBtn) {
                     showCount++;
                     btnWA.onclick = () => {
                         logInquiry('WhatsApp');
-                        const cleanPhone = data.phone.replace(/\D/g, ''); // Remove non-digits
+                        let cleanPhone = data.phone.replace(/\D/g, ''); // Remove non-digits
+                        if (cleanPhone.startsWith('0')) {
+                            cleanPhone = '92' + cleanPhone.substring(1);
+                        } else if (!cleanPhone.startsWith('92')) {
+                            cleanPhone = '92' + cleanPhone;
+                        }
                         const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(productDetails)}`;
                         window.open(url, '_blank');
                     };
@@ -152,13 +157,17 @@ if (buyNowBtn) {
                     showCount++;
                     btnFB.onclick = () => {
                         logInquiry('Facebook');
-                        // Extract Page ID or Username from FB URL
-                        let pageId = data.fb.trim();
-                        if (pageId.includes('facebook.com/')) {
-                            pageId = pageId.split('facebook.com/')[1].split('/')[0].split('?')[0];
-                        }
-                        const url = `https://m.me/${pageId}?text=${encodeURIComponent(productDetails)}`;
-                        window.open(url, '_blank');
+                        navigator.clipboard.writeText(productDetails).then(() => {
+                            showToast("Details copy ho gayi hain! Messenger mein 'Paste' kar den.", "success");
+                            let pageId = data.fb.trim();
+                            if (pageId.includes('facebook.com/')) {
+                                pageId = pageId.split('facebook.com/')[1].split('/')[0].split('?')[0];
+                            }
+                            const url = `https://m.me/${pageId}`;
+                            window.open(url, '_blank');
+                        }).catch(() => {
+                            window.open(data.fb, '_blank');
+                        });
                     };
                 } else { btnFB.style.display = 'none'; }
 
@@ -167,9 +176,8 @@ if (buyNowBtn) {
                     showCount++;
                     btnIG.onclick = () => {
                         logInquiry('Instagram');
-                        // Instagram doesn't support pre-fill text via URL, so we copy to clipboard
                         navigator.clipboard.writeText(productDetails).then(() => {
-                            showToast("Product details copy ho gayi hain! Instagram pe ja kar 'Paste' kar den.", "success");
+                            showToast("Details copy ho gayi hain! Instagram mein 'Paste' kar den.", "success");
                             window.open(data.insta, '_blank');
                         }).catch(() => {
                             window.open(data.insta, '_blank');
