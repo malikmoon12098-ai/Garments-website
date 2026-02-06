@@ -593,154 +593,120 @@ footer {
         width: 50px;
         height: 50px;
     }
+}
 
-    /* Desktop-like Header on Mobile */
+@media (max-width: 900px) {
     header {
-        height: auto;
-        padding: 10px 0;
+        height: 70px;
         background: var(--primary);
     }
 
-    nav {
-        flex-direction: row;
-        /* Keep row like desktop */
-        justify-content: space-between;
-        /* Space out logo and links */
-        align-items: center;
-        gap: 0;
-        width: 100%;
-    }
-
-    /* Hide the hamburger menu as we are showing links */
-    .mobile-menu-btn {
-        display: none;
-    }
-
-    /* Force links to be visible in a row */
-    .nav-links {
-        display: flex;
-        flex-direction: row;
-        gap: 10px;
-        /* Tight gap */
-        margin: 0;
-        width: auto;
-        background: transparent;
-    }
-
-    .nav-links li a {
-        font-size: 0.6rem;
-        /* Very small text to fit */
-        color: var(--text-white);
-        opacity: 0.9;
-        font-weight: 600;
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
-    }
-
-    /* Resize Logo */
     .brand-logo {
-        height: 110px;
+        height: 60px !important;
         filter: invert(1);
     }
 
     header.scrolled .brand-logo {
-        height: 90px;
+        height: 50px !important;
     }
 
-    /* Scale down Typography significantly */
+    /* Standard Mobile Menu behavior - hide nav-links unless active */
+    .nav-links {
+        position: fixed;
+        top: 70px;
+        left: -100%;
+        width: 100%;
+        height: calc(100vh - 70px);
+        background: var(--primary);
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2rem;
+        transition: 0.4s;
+        z-index: 999;
+    }
+
+    .nav-links.active {
+        left: 0;
+    }
+
+    .nav-links li a {
+        font-size: 1.5rem;
+        color: white;
+    }
+
+    .mobile-menu-btn {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+    }
+
+    .mobile-menu-btn span {
+        width: 25px;
+        height: 2px;
+        background: white;
+        transition: 0.3s;
+    }
+
+    /* Hero Section Scales */
     .hero h1 {
-        font-size: 1.8rem;
+        font-size: 2.5rem;
     }
 
     .hero p {
-        font-size: 0.9rem;
-        max-width: 90%;
+        font-size: 1rem;
+        max-width: 100%;
     }
 
-    .section-header h2 {
-        font-size: 1.5rem;
-    }
-
-    /* Keep Footer Grid similar to Desktop (4 columns) */
-    .footer-grid {
-        grid-template-columns: 2fr 1fr 1fr 2fr;
-        /* Matched desktop */
-        gap: 10px;
-        /* Tighter gap */
-        text-align: left;
-        /* Keep left align */
-    }
-
-    /* Footer elements scaling */
-    .footer-brand .logo {
-        font-size: 1.2rem;
-        margin-bottom: 0.5rem;
-    }
-
-    .footer-links h4,
-    .footer-contact h4 {
-        font-size: 0.7rem;
-        margin-bottom: 10px;
-    }
-
-    .footer-links a,
-    .footer-contact p,
-    .footer p {
-        font-size: 0.6rem;
-    }
-
-    .newsletter-form input {
-        padding: 6px;
-        font-size: 0.7rem;
+    .hero-btns {
+        flex-direction: column;
         width: 100%;
     }
 
-    .newsletter-form button {
-        padding: 6px 10px;
-        font-size: 0.7rem;
+    .hero-btns .btn {
+        width: 100%;
+        text-align: center;
     }
 
-    /* Adjust container padding */
-    .container {
-        padding: 0 15px;
+    /* Section Spacing */
+    .section {
+        padding: 60px 0;
     }
 
-    /* Collection Grid - Keep 3 columns but smaller */
+    /* Collection Grid */
     .collection-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 5px;
+        grid-template-columns: 1fr;
     }
 
     .collection-card {
-        height: 150px;
+        height: 300px;
     }
 
-    /* Product Grid - maybe 2 columns is better than 1 for "desktop feel" */
+    /* Product Grid */
     .product-grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
+        gap: 15px;
     }
 
-    .product-img {
-        height: 200px;
+    /* Footer - Full Width Stacking */
+    .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+        text-align: center;
     }
 
-    .name {
-        font-size: 0.8rem;
+    .footer-brand,
+    .footer-links,
+    .footer-contact,
+    .footer-newsletter {
+        width: 100%;
     }
 
-    .price {
-        font-size: 0.9rem;
-    }
-
-    /* Fix page content spacing */
-    .shop-page,
-    .contact-page,
-    .product-details-page,
-    .cart-page,
-    .admin-panel {
-        padding-top: 80px;
-        /* Reduced from desktop but enough for header */
+    .container {
+        padding: 0 20px;
     }
 }
 
