@@ -10,7 +10,6 @@ const mainContent = document.getElementById('adminMainContent');
 const pinInput = document.getElementById('adminPin');
 const loginBtn = document.getElementById('loginBtn');
 const authError = document.getElementById('authError');
-const logoutBtn = document.getElementById('logoutBtn');
 
 export function checkAuth() {
     if (sessionStorage.getItem('adminAuthenticated') === 'true') {

@@ -98,13 +98,13 @@ nav {
 }
 
 .brand-logo {
-    height: 80px;
+    height: 130px;
     width: auto;
     transition: var(--transition);
 }
 
 header.scrolled .brand-logo {
-    height: 50px;
+    height: 90px;
 }
 
 .footer-logo {
@@ -639,13 +639,12 @@ footer {
 
     /* Resize Logo */
     .brand-logo {
-        height: 100px;
-        /* Increased to 100px */
+        height: 110px;
         filter: invert(1);
     }
 
     header.scrolled .brand-logo {
-        height: 80px;
+        height: 90px;
     }
 
     /* Scale down Typography significantly */
@@ -891,7 +890,58 @@ footer {
     opacity: 0.9;
 }
 
-/* --- PREMIUM GLASSY NOTIFICATIONS --- */
+/* --- PREMIUM BACK BUTTON --- */
+.back-btn-container {
+    padding: 20px 0 0 20px;
+    position: absolute;
+    top: 140px;
+    left: 20px;
+    z-index: 1000;
+}
+
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 10px 20px;
+    border-radius: 50px;
+    color: #000;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: 0.3s;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.back-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateX(-5px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+.back-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+@media (max-width: 900px) {
+    .back-btn-container {
+        top: 100px;
+        left: 10px;
+        padding: 10px;
+    }
+
+    .back-btn {
+        padding: 8px 15px;
+        font-size: 0.8rem;
+    }
+}
+
 .toast-container {
     position: fixed;
     bottom: 30px;
