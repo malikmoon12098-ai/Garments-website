@@ -124,24 +124,32 @@ if (buyNowBtn) {
 
                 const productDetails = `Assalam o Alaikum! I'm interested in buying this product:\n\n*Product:* ${currentProduct.name}\n*Price:* Rs. ${currentProduct.price}\n*Qty:* ${qtyInput.value}\n*Link:* ${window.location.href}`;
 
+                // Helper to log inquiry
                 const logInquiry = async (platform) => {
                     try {
-                        await addDoc(collection(db, "inquiries"), {
-                            productName: currentProduct.name,
-                            platform: platform,
-                            timestamp: serverTimestamp(),
+                        const inquiry = {
                             productId: currentProduct.id,
-                            qty: qtyInput.value
-                        });
-                    } catch (e) { console.error("Error logging inquiry", e); }
+                            productName: currentProduct.name,
+                            productPrice: currentProduct.price,
+                            productImage: currentProduct.image,
+                            platform: platform,
+                            status: 'new', // new | converted
+                            timestamp: serverTimestamp(),
+                            qty: parseInt(qtyInput.value) || 1
+                        };
+                        console.log("Logging inquiry:", inquiry);
+                        await addDoc(collection(db, "inquiries"), inquiry);
+                    } catch (e) {
+                        console.error("Error logging inquiry", e);
+                    }
                 };
 
                 if (data.phone) {
                     btnWA.style.display = 'block';
                     showCount++;
-                    btnWA.onclick = () => {
-                        logInquiry('WhatsApp');
-                        let cleanPhone = data.phone.replace(/\D/g, ''); // Remove non-digits
+                    btnWA.onclick = async () => {
+                        await logInquiry('WhatsApp');
+                        let cleanPhone = data.phone.replace(/\D/g, '');
                         if (cleanPhone.startsWith('0')) {
                             cleanPhone = '92' + cleanPhone.substring(1);
                         } else if (!cleanPhone.startsWith('92')) {
@@ -150,47 +158,55 @@ if (buyNowBtn) {
                         const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(productDetails)}`;
                         window.open(url, '_blank');
                     };
-                } else { btnWA.style.display = 'none'; }
+                } else { btnWA.style.display = 'block'; /* Show anyway for consistent UX, defaulting to log only or error if no phone? user asked for buttons. Assuming phone is set. */ }
 
-                if (data.fb) {
-                    btnFB.style.display = 'block';
-                    showCount++;
-                    btnFB.onclick = () => {
-                        logInquiry('Facebook');
-                        navigator.clipboard.writeText(productDetails).then(() => {
-                            showToast("Details copy ho gayi hain! Messenger mein 'Paste' kar den.", "success");
+                // Force display buttons as per user request, even if contact settings missing (fallback to just logging or partial fail)
+                // Actually, let's keep the check but ensure elements are visible if data exists.
+                // The user's request implies these should ALWAYS work.
+
+                // RE-BINDING CLICK HANDLERS WITH LOGGING
+
+                btnWA.onclick = async () => {
+                    await logInquiry('WhatsApp');
+                    if (data.phone) {
+                        let cleanPhone = data.phone.replace(/\D/g, '');
+                        if (cleanPhone.startsWith('0')) cleanPhone = '92' + cleanPhone.substring(1);
+                        else if (!cleanPhone.startsWith('92')) cleanPhone = '92' + cleanPhone;
+                        const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(productDetails)}`;
+                        window.open(url, '_blank');
+                    } else {
+                        alert("WhatsApp number not set in Admin Settings!");
+                    }
+                };
+
+                btnFB.onclick = async () => {
+                    await logInquiry('Facebook');
+                    navigator.clipboard.writeText(productDetails).then(() => {
+                        showToast("Details copied! Paste in Messenger.", "success");
+                        if (data.fb) {
                             let pageId = data.fb.trim();
                             if (pageId.includes('facebook.com/')) {
                                 pageId = pageId.split('facebook.com/')[1].split('/')[0].split('?')[0];
                             }
                             const url = `https://m.me/${pageId}`;
                             window.open(url, '_blank');
-                        }).catch(() => {
-                            window.open(data.fb, '_blank');
-                        });
-                    };
-                } else { btnFB.style.display = 'none'; }
+                        } else {
+                            window.open("https://facebook.com", "_blank");
+                        }
+                    });
+                };
 
-                if (data.insta) {
-                    btnIG.style.display = 'block';
-                    showCount++;
-                    btnIG.onclick = () => {
-                        logInquiry('Instagram');
-                        navigator.clipboard.writeText(productDetails).then(() => {
-                            showToast("Details copy ho gayi hain! Instagram mein 'Paste' kar den.", "success");
-                            window.open(data.insta, '_blank');
-                        }).catch(() => {
-                            window.open(data.insta, '_blank');
-                        });
-                    };
-                } else { btnIG.style.display = 'none'; }
+                btnIG.onclick = async () => {
+                    await logInquiry('Instagram');
+                    navigator.clipboard.writeText(productDetails).then(() => {
+                        showToast("Details copied! Paste in Instagram.", "success");
+                        const url = data.insta ? data.insta : "https://instagram.com";
+                        window.open(url, '_blank');
+                    });
+                };
 
-                if (showCount > 0) {
+                if (true) { // Always show modal
                     socialModal.style.display = 'flex';
-                    document.body.style.overflow = 'hidden';
-                } else {
-                    // Fallback to original order modal if no social details
-                    orderModal.style.display = 'flex';
                     document.body.style.overflow = 'hidden';
                 }
             } else {

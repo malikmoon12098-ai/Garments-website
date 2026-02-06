@@ -341,12 +341,18 @@ async function loadInquiries() {
     const inquiriesList = document.getElementById('inquiriesList');
     if (!inquiriesList) return;
     try {
-        onSnapshot(query(collection(db, "inquiries"), limit(50)), (snapshot) => {
+        const q = query(collection(db, "inquiries"), limit(50));
+        // Using onSnapshot for real-time updates
+        onSnapshot(q, (snapshot) => {
             inquiriesList.innerHTML = '';
             if (snapshot.empty) { inquiriesList.innerHTML = '<p>No inquiries yet.</p>'; return; }
+
             snapshot.forEach(docSnap => {
                 const item = docSnap.data();
                 const id = docSnap.id;
+                // Only show if not converted (optional, or show status)
+                // if (item.status === 'converted') return; 
+
                 const date = item.timestamp ? item.timestamp.toDate().toLocaleString() : 'Just now';
                 const div = document.createElement('div');
                 div.className = 'admin-item';
@@ -358,25 +364,33 @@ async function loadInquiries() {
                 div.style.display = 'flex';
                 div.style.justifyContent = 'space-between';
                 div.style.alignItems = 'center';
+                div.style.marginBottom = '10px';
+                div.style.padding = '15px';
+                div.style.background = 'rgba(255, 255, 255, 0.05)';
+                div.style.borderRadius = '12px';
 
                 div.innerHTML = `
                     <div style="flex: 1;">
-                        <strong><span style="color: ${platformColor}">${item.platform}</span> inquiry!</strong>
-                        <p style="margin: 5px 0;">${escapeHTML(item.productName)} (Qty: ${item.qty})</p>
+                        <strong style="font-size: 1.1rem;"><span style="color: ${platformColor}">${item.platform}</span> Inquiry</strong>
+                        <p style="margin: 5px 0; color: #fff;">${escapeHTML(item.productName)} (Qty: ${item.qty})</p>
                         <span style="font-size:0.8rem; color:#888;">${date}</span>
                     </div>
                     <div style="display: flex; gap: 8px; align-items: center;">
+                         <button class="open-app-btn" data-url="${getAppUrl(item)}" 
+                            style="background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 10px; border-radius: 8px; cursor: pointer; transition: 0.3s;" title="Open Chat">
+                            Chat ↗
+                        </button>
                         <button class="convert-order" 
                             data-id="${id}" 
                             data-product="${escapeHTML(item.productName)}" 
                             data-qty="${item.qty}"
                             data-pid="${item.productId}"
-                            style="background: rgba(37, 211, 102, 0.1); border: 1px solid #25D366; color: #25D366; padding: 10px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: 0.3s;">
-                            🛒 Order
+                            style="background: rgba(37, 211, 102, 0.1); border: 1px solid #25D366; color: #25D366; padding: 10px 15px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: 0.3s; font-weight: 600;">
+                            Convert to Order
                         </button>
                         <button class="delete-inquiry" data-id="${id}" 
                             style="background: rgba(234, 84, 85, 0.1); border: 1px solid #ea5455; color: #ea5455; padding: 10px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s;">
-                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                            ✕
                         </button>
                     </div>
                 `;
@@ -386,10 +400,25 @@ async function loadInquiries() {
     } catch (e) { console.error(e); }
 }
 
+function getAppUrl(item) {
+    // Basic helper to try and open app, relies on stored preferences or standard URLs
+    // Since we don't store customer phone in inquiry (it's unknown), we just open the general app or business page
+    // Ideally we would want to know WHO sent it, but that's hard without auth.
+    // So this just opens the business app to check messages.
+    return item.platform === 'WhatsApp' ? 'https://web.whatsapp.com' :
+        item.platform === 'Facebook' ? 'https://business.facebook.com/latest/inbox' :
+            'https://www.instagram.com/direct/inbox/';
+}
+
 // Global listener for inquiry actions
 document.addEventListener('click', async (e) => {
     const delBtn = e.target.closest('.delete-inquiry');
     const convertBtn = e.target.closest('.convert-order');
+    const chatBtn = e.target.closest('.open-app-btn');
+
+    if (chatBtn) {
+        window.open(chatBtn.dataset.url, '_blank');
+    }
 
     if (delBtn) {
         const id = delBtn.dataset.id;
@@ -401,7 +430,7 @@ document.addEventListener('click', async (e) => {
                     await deleteDoc(doc(db, "inquiries", id));
                     showToast("Inquiry Deleted!", "success");
                 } catch (err) {
-                    showToast("Khatam karne mein masla hua.", "error");
+                    showToast("Delete failed.", "error");
                 }
             }
         );
@@ -456,20 +485,25 @@ if (convertInquiryForm) {
             return;
         }
 
-        showToast("Converting to Order...", "info");
+        const confirmBtn = convertInquiryForm.querySelector('button[type="submit"]');
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = "Creating...";
 
         try {
             // Get product price
             let price = 0;
-            const pSnap = await getDoc(doc(db, "products", productId));
-            if (pSnap.exists()) price = pSnap.data().price;
+            // Handle edge case where product might be deleted
+            if (productId) {
+                const pSnap = await getDoc(doc(db, "products", productId));
+                if (pSnap.exists()) price = pSnap.data().price;
+            }
 
             const orderData = {
                 customerName: name,
                 customerPhone: phone,
                 customerAddress: address,
                 customerCity: city,
-                productId: productId,
+                productId: productId || 'unknown',
                 productName: productName,
                 qty: parseInt(qty),
                 totalPrice: price * parseInt(qty),
@@ -480,7 +514,7 @@ if (convertInquiryForm) {
 
             // 1. Create Order
             await addDoc(collection(db, "orders"), orderData);
-            // 2. Delete Inquiry
+            // 2. Delete Inquiry (since it's converted)
             await deleteDoc(doc(db, "inquiries", id));
 
             showToast("Order Created Successfully!", "success");
@@ -489,6 +523,9 @@ if (convertInquiryForm) {
         } catch (err) {
             console.error(err);
             showToast("Order banane mein masla hua.", "error");
+        } finally {
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = "Banayein (Create Order)";
         }
     };
 }
