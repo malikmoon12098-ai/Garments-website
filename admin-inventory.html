@@ -34,13 +34,15 @@
             </aside>
             <main class="admin-content-area">
                 <div class="admin-card">
-                    <h2>Store Inventory</h2>
-                    <p class="subtitle">Search, filter, and manage your products here.</p>
-
-                    <!-- Category Filter Bar -->
-                    <div id="adminCategoryFilter" class="category-filter"
-                        style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
-                        <button class="filter-tab active" data-category="all">All Items</button>
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <div>
+                            <h2>Store Inventory</h2>
+                            <p class="subtitle">Search, filter, and manage your products here.</p>
+                        </div>
+                        <button id="backToCategories" class="btn"
+                            style="display: none; background: rgba(255,255,255,0.05); color: #888; border: 1px solid rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 10px; cursor: pointer; font-size: 0.85rem;">←
+                            Back to Categories</button>
                     </div>
 
                     <div id="productList" class="product-list-admin">

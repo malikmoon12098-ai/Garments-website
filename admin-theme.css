@@ -377,28 +377,66 @@ header.admin-header .logo:hover img {
     gap: 25px;
 }
 
-/* Filter Tabs */
-.filter-tab {
-    padding: 10px 20px;
+/* Visual Category Cards (Inventory) */
+.category-card {
     background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.6);
-    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    overflow: hidden;
     cursor: pointer;
-    font-size: 0.9rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    backdrop-filter: blur(10px);
 }
 
-.filter-tab:hover {
+.category-card:hover {
+    transform: translateY(-8px);
     background: rgba(255, 255, 255, 0.08);
+    border-color: var(--accent);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
 }
 
-.filter-tab.active {
-    background: var(--accent);
+.category-img-container {
+    width: 100%;
+    height: 150px;
+    background: #000;
+    overflow: hidden;
+}
+
+.category-img-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.8;
+    transition: transform 0.5s ease;
+}
+
+.category-card:hover .category-img-container img {
+    transform: scale(1.1);
+    opacity: 1;
+}
+
+.category-info {
+    padding: 15px;
+    text-align: center;
+}
+
+.category-info h4 {
+    margin: 0;
+    font-size: 1.1rem;
     color: white;
-    border-color: var(--accent);
-    box-shadow: 0 4px 15px rgba(115, 103, 240, 0.3);
+    text-transform: capitalize;
+}
+
+.category-info p {
+    margin: 5px 0 0;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* Body scroll lock */
+body.stop-scroll {
+    overflow: hidden;
 }
 
 /* --- TOASTS (Glassy) --- */
@@ -462,9 +500,13 @@ header.admin-header .logo:hover img {
     background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(10px);
     display: flex;
-    align-items: center;
+    align-items: flex-start;
+    /* Start from top to allow scrolling */
     justify-content: center;
     z-index: 10001;
+    overflow-y: auto;
+    /* Enable vertical scroll for long modals */
+    padding: 20px 0;
 }
 
 .glass-modal {
@@ -472,10 +514,11 @@ header.admin-header .logo:hover img {
     border: 1px solid var(--glass-border);
     backdrop-filter: blur(20px);
     border-radius: 28px;
-    padding: 40px;
-    width: 90%;
-    max-width: 420px;
-    text-align: center;
+    padding: 30px;
+    width: 95%;
+    max-width: 500px;
+    margin: auto;
+    /* Center with flex parent's padding */
     box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
     animation: scaleIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
@@ -556,17 +599,17 @@ header.admin-header .logo:hover img {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(20px);
-    padding: 40px;
+    padding: 30px;
     border-radius: 28px;
-    width: 90%;
-    max-width: 400px;
+    width: 92%;
+    max-width: 360px;
     text-align: center;
     box-shadow: 0 40px 100px rgba(0, 0, 0, 0.5);
     animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .auth-card h2 {
-    font-size: 1.8rem;
+    font-size: 1.6rem;
     margin-bottom: 10px;
     color: #fff;
     letter-spacing: -0.5px;
@@ -575,7 +618,7 @@ header.admin-header .logo:hover img {
 .auth-card .subtitle {
     color: rgba(255, 255, 255, 0.5);
     margin-bottom: 30px;
-    font-size: 1rem;
+    font-size: 0.95rem;
 }
 
 .auth-card input {

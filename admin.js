@@ -195,71 +195,111 @@ let currentInventoryCategory = 'all';
 
 async function loadProducts() {
     const productList = document.getElementById('productList');
+    const backBtn = document.getElementById('backToCategories');
     if (!productList) return;
     productList.innerHTML = '<p>Loading inventory...</p>';
+
     try {
         const querySnapshot = await getDocs(query(collection(db, "products")));
         productList.innerHTML = '';
 
-        const categories = new Set(['all']);
-        const filteredDocs = [];
+        const categoryData = {}; // To store { categoryName: { image: firstProductImage, count: count } }
+        const productsOfSelectedCategory = [];
 
         querySnapshot.forEach(docSnap => {
             const product = docSnap.data();
-            if (product.category) categories.add(product.category);
+            const cat = product.category || 'Uncategorized';
 
-            if (currentInventoryCategory === 'all' || product.category === currentInventoryCategory) {
-                filteredDocs.push({ id: docSnap.id, data: product });
+            // Collect platform data for grouping
+            if (!categoryData[cat]) {
+                categoryData[cat] = { image: product.image, count: 0 };
+            }
+            categoryData[cat].count++;
+
+            // Collect products if a specific category is selected
+            if (currentInventoryCategory !== 'all' && cat === currentInventoryCategory) {
+                productsOfSelectedCategory.push({ id: docSnap.id, data: product });
             }
         });
 
-        renderCategoryTabs(Array.from(categories));
-
-        if (filteredDocs.length === 0) {
-            productList.innerHTML = '<p>No products found in this category.</p>';
-            return;
+        if (currentInventoryCategory === 'all') {
+            if (backBtn) backBtn.style.display = 'none';
+            renderCategoryCards(categoryData);
+        } else {
+            if (backBtn) {
+                backBtn.style.display = 'block';
+                backBtn.onclick = () => {
+                    currentInventoryCategory = 'all';
+                    loadProducts();
+                };
+            }
+            renderProductList(productsOfSelectedCategory);
         }
-
-        filteredDocs.forEach(item => {
-            const product = item.data;
-            const id = item.id;
-            const inStock = product.inStock !== false;
-            const div = document.createElement('div');
-            div.className = 'admin-item';
-            div.innerHTML = `
-                <img src="${product.image}" onerror="this.src='https://via.placeholder.com/150'">
-                <h4>${escapeHTML(product.name)}</h4>
-                <p><strong>Category:</strong> ${escapeHTML(product.category)}<br>
-                <strong>Price:</strong> Rs. ${parseFloat(product.price).toLocaleString()}<br>
-                <strong>Stock:</strong> ${product.stock || 0} (Limit: ${product.threshold || 0})<br>
-                <span style="color: ${inStock ? '#25D366' : '#ff4d4d'}; font-weight: bold;">${inStock ? '● In Stock' : '● Out of Stock'}</span></p>
-                <div style="display: flex; gap: 5px; margin-top: 10px;">
-                    <button class="edit-product" data-id="${id}" style="background:var(--accent); color:white; border:none; padding:8px; border-radius:6px; cursor:pointer; flex:1; font-weight:600;">Edit</button>
-                    <button class="toggle-stock" data-id="${id}" data-status="${inStock}" style="background:#333; color:white; border:none; padding:8px; border-radius:6px; cursor:pointer; flex:1;">${inStock ? 'Mark Out' : 'Mark In'}</button>
-                    <button class="delete-product" data-id="${id}" style="background:rgba(255,77,77,0.1); color:#ff4d4d; border:1px solid #ff4d4d; padding:8px; border-radius:6px; cursor:pointer; flex:0.5;">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                    </button>
-                </div>
-            `;
-            productList.appendChild(div);
-        });
         attachProductListeners();
     } catch (e) { console.error(e); }
 }
 
-function renderCategoryTabs(categories) {
-    const filterContainer = document.getElementById('adminCategoryFilter');
-    if (!filterContainer) return;
-    filterContainer.innerHTML = '';
-    categories.sort().forEach(cat => {
-        const btn = document.createElement('button');
-        btn.className = `filter-tab ${currentInventoryCategory === cat ? 'active' : ''}`;
-        btn.textContent = cat === 'all' ? 'All Items' : cat;
-        btn.onclick = () => {
+function renderCategoryCards(groups) {
+    const productList = document.getElementById('productList');
+    productList.style.display = 'grid';
+    productList.style.gridTemplateColumns = 'repeat(auto-fill, minmax(180px, 1fr))';
+    productList.style.gap = '20px';
+    productList.innerHTML = ''; // Clear previous content
+
+    Object.keys(groups).sort().forEach(cat => {
+        const data = groups[cat];
+        const card = document.createElement('div');
+        card.className = 'category-card';
+        card.innerHTML = `
+            <div class="category-img-container">
+                <img src="${data.image}" onerror="this.src='https://via.placeholder.com/150'">
+            </div>
+            <div class="category-info">
+                <h4>${escapeHTML(cat)}</h4>
+                <p>${data.count} Products</p>
+            </div>
+        `;
+        card.onclick = () => {
             currentInventoryCategory = cat;
             loadProducts();
         };
-        filterContainer.appendChild(btn);
+        productList.appendChild(card);
+    });
+}
+
+function renderProductList(items) {
+    const productList = document.getElementById('productList');
+    productList.style.display = 'grid'; // Maintain grid or switch to row if preferred
+    productList.style.gridTemplateColumns = 'repeat(auto-fill, minmax(280px, 1fr))'; // Adjust as needed for product items
+    productList.style.gap = '20px';
+    productList.innerHTML = ''; // Clear previous content
+
+    if (items.length === 0) {
+        productList.innerHTML = '<p>No products found in this category.</p>';
+        return;
+    }
+
+    items.forEach(item => {
+        const product = item.data;
+        const id = item.id;
+        const inStock = product.inStock !== false;
+        const div = document.createElement('div');
+        div.className = 'admin-item';
+        div.innerHTML = `
+            <img src="${product.image}" onerror="this.src='https://via.placeholder.com/150'">
+            <h4>${escapeHTML(product.name)}</h4>
+            <p><strong>Price:</strong> Rs. ${parseFloat(product.price).toLocaleString()}<br>
+            <strong>Stock:</strong> ${product.stock || 0} (Limit: ${product.threshold || 0})<br>
+            <span style="color: ${inStock ? '#25D366' : '#ff4d4d'}; font-weight: bold;">${inStock ? '● In Stock' : '● Out of Stock'}</span></p>
+            <div style="display: flex; gap: 5px; margin-top: 10px;">
+                <button class="edit-product" data-id="${id}" style="background:var(--accent); color:white; border:none; padding:8px; border-radius:6px; cursor:pointer; flex:1; font-weight:600;">Edit</button>
+                <button class="toggle-stock" data-id="${id}" data-status="${inStock}" style="background:#333; color:white; border:none; padding:8px; border-radius:6px; cursor:pointer; flex:1;">${inStock ? 'Mark Out' : 'Mark In'}</button>
+                <button class="delete-product" data-id="${id}" style="background:rgba(255,77,77,0.1); color:#ff4d4d; border:1px solid #ff4d4d; padding:8px; border-radius:6px; cursor:pointer; flex:0.5;">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
+            </div>
+        `;
+        productList.appendChild(div);
     });
 }
 
@@ -382,13 +422,17 @@ document.addEventListener('click', async (e) => {
 
         // Show modal
         modal.style.display = 'flex';
+        document.body.classList.add('stop-scroll');
     }
 });
 
 // Inquiry Modal Close
 const closeConvModal = document.getElementById('closeConvModal');
 if (closeConvModal) {
-    closeConvModal.onclick = () => document.getElementById('convertInquiryModal').style.display = 'none';
+    closeConvModal.onclick = () => {
+        document.getElementById('convertInquiryModal').style.display = 'none';
+        document.body.classList.remove('stop-scroll');
+    };
 }
 
 // Inquiry Form Submission
@@ -441,6 +485,7 @@ if (convertInquiryForm) {
 
             showToast("Order Created Successfully!", "success");
             document.getElementById('convertInquiryModal').style.display = 'none';
+            document.body.classList.remove('stop-scroll');
         } catch (err) {
             console.error(err);
             showToast("Order banane mein masla hua.", "error");
@@ -530,6 +575,7 @@ async function openEditModal(id) {
             document.getElementById('editStock').value = product.stock || 0;
             document.getElementById('editThreshold').value = product.threshold || 0;
             modal.style.display = 'flex';
+            document.body.classList.add('stop-scroll');
         }
     } catch (e) { showToast("Error loading product", "error"); }
 }
@@ -538,7 +584,10 @@ function initEditProductForm() {
     const form = document.getElementById('editProductForm');
     const closeBtn = document.getElementById('closeEditModal');
     if (closeBtn) {
-        closeBtn.onclick = () => document.getElementById('editProductModal').style.display = 'none';
+        closeBtn.onclick = () => {
+            document.getElementById('editProductModal').style.display = 'none';
+            document.body.classList.remove('stop-scroll');
+        };
     }
     if (!form) return;
     form.onsubmit = async (e) => {
@@ -558,6 +607,7 @@ function initEditProductForm() {
             await updateDoc(doc(db, "products", id), updateData);
             showToast("Product Updated!", "success");
             document.getElementById('editProductModal').style.display = 'none';
+            document.body.classList.remove('stop-scroll');
             loadProducts();
         } catch (e) { showToast(e.message, "error"); }
     };
