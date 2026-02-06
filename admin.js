@@ -1,3 +1,4 @@
+import { db, storage } from './firebase-config.js';
 import { collection, doc, getDoc, getDocs, setDoc, query, onSnapshot, serverTimestamp, deleteDoc, limit, where, addDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 import { checkAuth, highlightSidebar, showToast, escapeHTML, showConfirm } from './admin-core.js';
@@ -82,8 +83,21 @@ async function loadOrders() {
 function attachOrderFilters() {
     const btnPending = document.getElementById('viewPendingOrders');
     const btnCompleted = document.getElementById('viewCompletedOrders');
-    if (btnPending) btnPending.onclick = () => { currentOrderFilter = 'pending'; btnPending.style.background = '#D4AF37'; btnPending.style.color = '#000'; btnCompleted.style.background = 'transparent'; btnCompleted.style.color = '#888'; loadOrders(); };
-    if (btnCompleted) btnCompleted.onclick = () => { currentOrderFilter = 'completed'; btnCompleted.style.background = '#D4AF37'; btnCompleted.style.color = '#000'; btnPending.style.background = 'transparent'; btnPending.style.color = '#888'; loadOrders(); };
+
+    const setStyles = () => {
+        if (currentOrderFilter === 'pending') {
+            if (btnPending) { btnPending.style.background = '#ff9800'; btnPending.style.color = '#000'; btnPending.style.border = 'none'; }
+            if (btnCompleted) { btnCompleted.style.background = 'rgba(255,255,255,0.05)'; btnCompleted.style.color = '#888'; btnCompleted.style.border = '1px solid rgba(255,255,255,0.1)'; }
+        } else {
+            if (btnPending) { btnPending.style.background = 'rgba(255,255,255,0.05)'; btnPending.style.color = '#888'; btnPending.style.border = '1px solid rgba(255,255,255,0.1)'; }
+            if (btnCompleted) { btnCompleted.style.background = '#4caf50'; btnCompleted.style.color = '#fff'; btnCompleted.style.border = 'none'; }
+        }
+    };
+
+    if (btnPending) btnPending.onclick = () => { currentOrderFilter = 'pending'; setStyles(); loadOrders(); };
+    if (btnCompleted) btnCompleted.onclick = () => { currentOrderFilter = 'completed'; setStyles(); loadOrders(); };
+
+    setStyles(); // Run once to set initial state
 }
 
 function attachOrderListeners() {
@@ -138,7 +152,7 @@ function initImageUpload() {
             if (!file) return;
             showToast("Uploading...", "info");
             try {
-                const storageRef = ref(storage, `products / ${Date.now()}_${file.name} `);
+                const storageRef = ref(storage, `products/${Date.now()}_${file.name}`);
                 const snapshot = await uploadBytes(storageRef, file);
                 const url = await getDownloadURL(snapshot.ref);
                 if (pImage) pImage.value = url;
@@ -163,7 +177,7 @@ async function loadProducts() {
             const div = document.createElement('div');
             div.className = 'admin-item';
             div.innerHTML = `
-    < img src = "${product.image}" onerror = "this.src='https://via.placeholder.com/150'" >
+                <img src="${product.image}" onerror="this.src='https://via.placeholder.com/150'">
                 <h4>${escapeHTML(product.name)}</h4>
                 <p>${escapeHTML(product.category)} - Rs. ${parseFloat(product.price).toLocaleString()}<br>
                 <span style="color: ${inStock ? '#25D366' : '#ff4d4d'};">${inStock ? '● In Stock' : '● Out of Stock'}</span></p>
