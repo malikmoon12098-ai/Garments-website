@@ -30,6 +30,13 @@ const orderSuccess = document.getElementById('orderSuccess');
 const successProductName = document.getElementById('successProductName');
 const phoneError = document.getElementById('phoneError');
 
+// Social Modal Elements
+const socialModal = document.getElementById('socialContactModal');
+const closeSocialModal = document.getElementById('closeSocialModal');
+const btnWA = document.getElementById('buyWhatsApp');
+const btnFB = document.getElementById('buyFacebook');
+const btnIG = document.getElementById('buyInstagram');
+
 let currentProduct = null;
 
 async function initProduct() {
@@ -97,15 +104,110 @@ if (qtyMinus) {
 
 // Modal Toggle
 if (buyNowBtn) {
-    buyNowBtn.onclick = () => {
-        orderModal.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
+    buyNowBtn.onclick = async () => {
+        if (!currentProduct) return;
+
+        // Show loading state on button
+        const originalText = buyNowBtn.textContent;
+        buyNowBtn.textContent = "Connecting...";
+        buyNowBtn.disabled = true;
+
+        try {
+            const contactSnap = await getDoc(doc(db, "settings", "contact"));
+            buyNowBtn.textContent = originalText;
+            buyNowBtn.disabled = false;
+
+            if (contactSnap.exists()) {
+                const data = contactSnap.data();
+                let showCount = 0;
+
+                const productDetails = `Assalam o Alaikum! I'm interested in buying this product:\n\n*Product:* ${currentProduct.name}\n*Price:* Rs. ${currentProduct.price}\n*Qty:* ${qtyInput.value}\n*Link:* ${window.location.href}`;
+
+                const logInquiry = async (platform) => {
+                    try {
+                        await addDoc(collection(db, "inquiries"), {
+                            productName: currentProduct.name,
+                            platform: platform,
+                            timestamp: serverTimestamp(),
+                            productId: currentProduct.id,
+                            qty: qtyInput.value
+                        });
+                    } catch (e) { console.error("Error logging inquiry", e); }
+                };
+
+                if (data.phone) {
+                    btnWA.style.display = 'block';
+                    showCount++;
+                    btnWA.onclick = () => {
+                        logInquiry('WhatsApp');
+                        const cleanPhone = data.phone.replace(/\D/g, ''); // Remove non-digits
+                        const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(productDetails)}`;
+                        window.open(url, '_blank');
+                    };
+                } else { btnWA.style.display = 'none'; }
+
+                if (data.fb) {
+                    btnFB.style.display = 'block';
+                    showCount++;
+                    btnFB.onclick = () => {
+                        logInquiry('Facebook');
+                        // Extract Page ID or Username from FB URL
+                        let pageId = data.fb.trim();
+                        if (pageId.includes('facebook.com/')) {
+                            pageId = pageId.split('facebook.com/')[1].split('/')[0].split('?')[0];
+                        }
+                        const url = `https://m.me/${pageId}?text=${encodeURIComponent(productDetails)}`;
+                        window.open(url, '_blank');
+                    };
+                } else { btnFB.style.display = 'none'; }
+
+                if (data.insta) {
+                    btnIG.style.display = 'block';
+                    showCount++;
+                    btnIG.onclick = () => {
+                        logInquiry('Instagram');
+                        // Instagram doesn't support pre-fill text via URL, so we copy to clipboard
+                        navigator.clipboard.writeText(productDetails).then(() => {
+                            alert("Bhai, product details copy ho gayi hain! Instagram pe ja kar bas 'Paste' kar den.");
+                            window.open(data.insta, '_blank');
+                        }).catch(() => {
+                            window.open(data.insta, '_blank');
+                        });
+                    };
+                } else { btnIG.style.display = 'none'; }
+
+                if (showCount > 0) {
+                    socialModal.style.display = 'flex';
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    // Fallback to original order modal if no social details
+                    orderModal.style.display = 'flex';
+                    document.body.style.overflow = 'hidden';
+                }
+            } else {
+                orderModal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+        } catch (err) {
+            console.error(err);
+            buyNowBtn.textContent = originalText;
+            buyNowBtn.disabled = false;
+            orderModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
     }
 }
 
 if (closeModal) {
     closeModal.onclick = () => {
         orderModal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+}
+
+if (closeSocialModal) {
+    closeSocialModal.onclick = () => {
+        socialModal.style.display = 'none';
         document.body.style.overflow = 'auto';
     }
 }

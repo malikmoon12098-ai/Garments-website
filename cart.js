@@ -1,5 +1,5 @@
 import { db } from './firebase-config.js';
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { doc, getDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const cartList = document.getElementById('cartList');
 const cartSummary = document.getElementById('cartSummary');
@@ -7,24 +7,15 @@ const cartTotalEl = document.getElementById('cartTotal');
 const checkoutBtn = document.getElementById('checkoutBtn');
 const cartCountHeader = document.getElementById('cartCountHeader');
 
-let cart = JSON.parse(localStorage.getItem('cart') || '[]');
-let ownerPhone = '';
+// Modal Elements
+const orderModal = document.getElementById('orderModal');
+const closeModal = document.getElementById('closeModal');
+const directOrderForm = document.getElementById('directOrderForm');
+const orderSuccess = document.getElementById('orderSuccess');
 
-// Load Owner Phone
-async function loadSettings() {
-    try {
-        const docSnap = await getDoc(doc(db, "settings", "contact"));
-        if (docSnap.exists()) {
-            ownerPhone = docSnap.data().phone || '';
-            ownerPhone = ownerPhone.replace(/\D/g, '');
-        }
-    } catch (error) {
-        console.error("Error loading settings:", error);
-    }
-}
+let cart = JSON.parse(localStorage.getItem('cart') || '[]');
 
 function renderCart() {
-    // Update Header Count
     if (cartCountHeader) {
         cartCountHeader.textContent = `(${cart.length})`;
     }
@@ -38,13 +29,15 @@ function renderCart() {
     let total = 0;
 
     cartList.innerHTML = cart.map((item, index) => {
-        total += parseFloat(item.price);
+        const qty = item.qty || 1;
+        const itemTotal = parseFloat(item.price) * qty;
+        total += itemTotal;
         return `
         <div class="cart-item">
             <img src="${item.image}" alt="${item.name}" onerror="this.src='https://via.placeholder.com/80'">
             <div class="item-details">
                 <h4>${item.name}</h4>
-                <div class="item-price">Rs. ${parseFloat(item.price).toLocaleString()}</div>
+                <div class="item-price">Rs. ${parseFloat(item.price).toLocaleString()} x ${qty}</div>
             </div>
             <button class="remove-btn" data-index="${index}">Remove</button>
         </div>
@@ -54,12 +47,11 @@ function renderCart() {
     cartTotalEl.textContent = `Rs. ${total.toLocaleString()}`;
     cartSummary.style.display = 'block';
 
-    // Add Event Listeners for Remove Buttons
     document.querySelectorAll('.remove-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const index = parseInt(e.target.getAttribute('data-index'));
+        btn.onclick = (e) => {
+            const index = parseInt(e.target.dataset.index);
             removeItem(index);
-        });
+        };
     });
 }
 
@@ -70,26 +62,71 @@ function removeItem(index) {
     renderCart();
 }
 
+// Modal Toggle
 if (checkoutBtn) {
-    checkoutBtn.addEventListener('click', () => {
-        if (cart.length === 0) return alert("Cart is empty!");
-
-        let message = `*New Order Request*\n`;
-        let total = 0;
-
-        cart.forEach(item => {
-            message += `- ${item.name} (Rs. ${item.price})\n`;
-            total += parseFloat(item.price);
-        });
-
-        message += `\n*Total Bill:* Rs. ${total}\n\nI want to order these items. Please confirm.`;
-
-        // Redirect to U-CHAT with parameters
-        const uChatUrl = `U-CHAT/index.html?orderText=${encodeURIComponent(message)}`;
-        window.location.href = uChatUrl;
-    });
+    checkoutBtn.onclick = () => {
+        if (cart.length === 0) return;
+        orderModal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    };
 }
 
-// Init
-loadSettings();
+if (closeModal) {
+    closeModal.onclick = () => {
+        orderModal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    };
+}
+
+// Direct Order Submission
+if (directOrderForm) {
+    directOrderForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const confirmBtn = document.getElementById('confirmOrderBtn');
+        const name = document.getElementById('custName').value.trim();
+        const phone = document.getElementById('custPhone').value.trim();
+        const address = document.getElementById('custAddress').value.trim();
+        const city = document.getElementById('custCity').value.trim();
+
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = "Placing Order...";
+
+        try {
+            let totalBill = 0;
+            let summaryString = "";
+
+            cart.forEach(item => {
+                const qty = item.qty || 1;
+                const price = parseFloat(item.price);
+                totalBill += price * qty;
+                summaryString += `- ${qty}x ${item.name} (Rs. ${price})\n`;
+            });
+
+            const orderData = {
+                customerName: name,
+                customerPhone: phone,
+                customerAddress: address,
+                customerCity: city,
+                items: cart, // Store full cart for reference
+                totalPrice: totalBill,
+                status: 'pending',
+                timestamp: serverTimestamp(),
+                summary: summaryString
+            };
+
+            await addDoc(collection(db, "orders"), orderData);
+
+            // Success UI
+            directOrderForm.style.display = 'none';
+            orderSuccess.style.display = 'block';
+
+        } catch (err) {
+            console.error(err);
+            alert("Order failed: " + err.message);
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = "Confirm Order";
+        }
+    };
+}
+
 renderCart();

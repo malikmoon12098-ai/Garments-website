@@ -214,6 +214,34 @@
                 </div>
             </div>
         </div>
+        <!-- SOCIAL CONTACT MODAL -->
+        <div id="socialContactModal" class="order-modal"
+            style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2001; justify-content: center; align-items: center;">
+            <div class="order-modal-content"
+                style="background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 400px; position: relative; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+                <span id="closeSocialModal"
+                    style="position: absolute; top: 15px; right: 20px; font-size: 28px; cursor: pointer; color: #888;">&times;</span>
+                <h2 style="margin-bottom: 10px; color: #000; font-weight: 800;">Order via Social</h2>
+                <p style="color: #666; font-size: 0.9rem; margin-bottom: 25px;">Choose a platform to send product
+                    details
+                    automatically.</p>
+
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <button id="buyWhatsApp" class="btn"
+                        style="display: none; background: #25D366; color: white; padding: 16px; border-radius: 10px; font-weight: 700; cursor: pointer; border: none; font-size: 1.05rem; transition: transform 0.2s;">
+                        WhatsApp
+                    </button>
+                    <button id="buyFacebook" class="btn"
+                        style="display: none; background: #1877F2; color: white; padding: 16px; border-radius: 10px; font-weight: 700; cursor: pointer; border: none; font-size: 1.05rem; transition: transform 0.2s;">
+                        Facebook Messenger
+                    </button>
+                    <button id="buyInstagram" class="btn"
+                        style="display: none; background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%); color: white; padding: 16px; border-radius: 10px; font-weight: 700; cursor: pointer; border: none; font-size: 1.05rem; transition: transform 0.2s;">
+                        Instagram Direct
+                    </button>
+                </div>
+            </div>
+        </div>
     </main>
 
     <footer style="margin-top: 5rem; padding: 40px 0; border-top: 1px solid #eee;">

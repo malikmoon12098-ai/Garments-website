@@ -389,6 +389,7 @@
                 <button class="sidebar-btn active" data-target="section-orders">Orders</button>
                 <button class="sidebar-btn" data-target="section-add">Add Product</button>
                 <button class="sidebar-btn" data-target="section-inventory">Inventory</button>
+                <button class="sidebar-btn" data-target="section-messages">Messages</button>
                 <button class="sidebar-btn" data-target="section-settings">Settings</button>
 
                 <hr style="opacity: 0.1; margin: 10px 0;">
@@ -487,6 +488,17 @@
                     </div>
                 </section>
 
+                <!-- 5. MESSAGES/INQUIRIES PAGE -->
+                <section id="section-messages" class="admin-section">
+                    <div class="admin-card">
+                        <h2>Platform Inquiries</h2>
+                        <p style="margin-bottom: 2rem;">Track which social platforms your customers are using.</p>
+                        <div id="inquiriesList">
+                            <p>Loading messages...</p>
+                        </div>
+                    </div>
+                </section>
+
                 <!-- 4. SETTINGS PAGE -->
                 <section id="section-settings" class="admin-section">
                     <div class="admin-card">
@@ -507,16 +519,6 @@
                             <div class="form-group">
                                 <label>Store Address</label>
                                 <input type="text" id="cAddress" placeholder="Physical location details">
-                            </div>
-                            <!-- AI CHAT INTEGRATION -->
-                            <div class="form-group"
-                                style="border: 1px solid rgba(212, 175, 55, 0.3); padding: 15px; border-radius: 8px; margin-bottom: 20px; background: rgba(212, 175, 55, 0.05);">
-                                <label style="color: var(--admin-accent); font-weight: bold;">Store U-CHAT ID (for AI
-                                    Chat)</label>
-                                <p style="font-size: 0.75rem; color: #888; margin-bottom: 8px;">U-CHAT app kholen,
-                                    Profile mein jayen aur apna "User Code" yahan paste karen (e.g. U-123456).</p>
-                                <input type="text" id="cUchatCode" placeholder="U-XXXXXX"
-                                    style="border-color: var(--admin-accent);">
                             </div>
                             <div class="grid-two">
                                 <div class="form-group">

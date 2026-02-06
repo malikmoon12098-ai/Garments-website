@@ -17,6 +17,7 @@ const form = document.getElementById('addProductForm');
 const contactForm = document.getElementById('contactSettingsForm');
 const statusDiv = document.getElementById('status');
 const productList = document.getElementById('productList');
+const inquiriesList = document.getElementById('inquiriesList');
 
 const activeSessionCount = document.getElementById('activeSessionCount');
 
@@ -150,7 +151,6 @@ if (contactForm) {
             address: document.getElementById('cAddress') ? document.getElementById('cAddress').value : '',
             insta: document.getElementById('cInsta') ? document.getElementById('cInsta').value : '',
             fb: document.getElementById('cFB') ? document.getElementById('cFB').value : '',
-            uChatCode: document.getElementById('cUchatCode') ? document.getElementById('cUchatCode').value : '',
             updatedAt: serverTimestamp()
         };
 
@@ -175,7 +175,6 @@ async function loadContactInfo() {
             if (document.getElementById('cAddress')) document.getElementById('cAddress').value = data.address || '';
             if (document.getElementById('cInsta')) document.getElementById('cInsta').value = data.insta || '';
             if (document.getElementById('cFB')) document.getElementById('cFB').value = data.fb || '';
-            if (document.getElementById('cUchatCode')) document.getElementById('cUchatCode').value = data.uChatCode || '';
         }
     } catch (error) {
         console.log("No previous settings found.");
@@ -502,6 +501,50 @@ if (btnCompleted) {
     };
 }
 
+// --- MANAGE INQUIRIES ---
+async function loadInquiries() {
+    if (!inquiriesList) return;
+    inquiriesList.innerHTML = '<p>Loading message logs...</p>';
+
+    try {
+        const q = query(collection(db, "inquiries"), limit(50));
+        // Use onSnapshot for real-time updates
+        onSnapshot(q, (snapshot) => {
+            inquiriesList.innerHTML = '';
+            if (snapshot.empty) {
+                inquiriesList.innerHTML = '<p>Abhi tak koi platform inquiry nahi aayi.</p>';
+                return;
+            }
+
+            const inquiries = [];
+            snapshot.forEach(doc => inquiries.push({ id: doc.id, ...doc.data() }));
+
+            // Sort newest first
+            inquiries.sort((a, b) => (b.timestamp?.toDate() || 0) - (a.timestamp?.toDate() || 0));
+
+            inquiries.forEach(item => {
+                const date = item.timestamp ? item.timestamp.toDate().toLocaleString() : 'Just now';
+                const div = document.createElement('div');
+                div.className = 'admin-item';
+                div.style.borderLeft = `5px solid ${item.platform === 'WhatsApp' ? '#25D366' : item.platform === 'Facebook' ? '#1877F2' : '#E1306C'}`;
+                div.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div>
+                            <strong style="color: var(--admin-accent); font-size: 1.1rem;">${item.platform} par Order aaya he!</strong>
+                            <p style="margin-top: 5px; color: #fff;">Product: <b>${escapeHTML(item.productName)}</b> (Qty: ${item.qty})</p>
+                        </div>
+                        <span style="font-size: 0.8rem; color: #888;">${date}</span>
+                    </div>
+                `;
+                inquiriesList.appendChild(div);
+            });
+        });
+    } catch (err) {
+        console.error(err);
+        inquiriesList.innerHTML = "Error loading inquiries.";
+    }
+}
+
 // --- SIDEBAR NAVIGATION ---
 const sidebarBtns = document.querySelectorAll('.sidebar-btn');
 const adminSections = document.querySelectorAll('.admin-section');
@@ -527,6 +570,7 @@ if (sidebarBtns.length > 0) {
             // Auto-refresh data if needed
             if (target === 'section-orders') loadOrders();
             if (target === 'section-inventory') loadProducts();
+            if (target === 'section-messages') loadInquiries();
 
         });
     });
@@ -536,3 +580,4 @@ if (sidebarBtns.length > 0) {
 loadProducts();
 loadContactInfo();
 loadOrders();
+loadInquiries();
