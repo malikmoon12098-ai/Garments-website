@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Product | KHADER Admin</title>
+    <link rel="stylesheet" href="admin-theme.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div id="adminAuthOverlay" style="display: none;">
+        <div class="auth-card">
+            <h2>Hizoor, PIN Likhen</h2><input type="password" id="adminPin" maxlength="4" placeholder="••••"><button
+                id="loginBtn" class="btn btn-primary"
+                style="width: 100%; background: var(--accent); color: white; border: none; padding: 16px; border-radius: 12px; font-weight: 700; cursor: pointer;">Access
+                Dashboard</button>
+        </div>
+    </div>
+    <div id="adminMainContent">
+        <header class="admin-header">
+            <div class="logo"><img src="images/logo.png" style="height: 45px;"></div>
+            <div style="display: flex; gap: 20px;"><span id="activeSessionCount"
+                    style="color: #28c76f; font-weight: 700;"></span><button id="logoutBtn"
+                    style="background: rgba(234, 84, 85, 0.1); border: 1px solid #ea5455; color: #ea5455; padding: 8px 16px; border-radius: 8px;">Logout</button>
+            </div>
+        </header>
+        <div class="admin-layout">
+            <aside class="admin-sidebar"><a href="admin-orders.html" class="sidebar-btn">Orders</a><a
+                    href="admin-add-product.html" class="sidebar-btn active">Add Product</a><a
+                    href="admin-inventory.html" class="sidebar-btn">Inventory</a><a href="admin-messages.html"
+                    class="sidebar-btn">Messages</a><a href="admin-settings.html" class="sidebar-btn">Settings</a>
+                <hr style="opacity: 0.05; margin: 20px 0;"><a href="index.html" class="sidebar-btn">View Site</a>
+            </aside>
+            <main class="admin-content-area">
+                <div class="admin-card">
+                    <h2>Naya Maal Add Karen</h2>
+                    <p class="subtitle">Fill the details below to add a new product to your shop.</p>
+                    <form id="addProductForm">
+                        <div class="grid-two">
+                            <div class="form-group"><label>Product Ka Naam</label><input type="text" id="pName" required
+                                    placeholder="e.g. Luxury Kurta"></div>
+                            <div class="form-group"><label>Price (RS.)</label><input type="number" id="pPrice" required
+                                    placeholder="1500"></div>
+                        </div>
+                        <div class="grid-two">
+                            <div class="form-group"><label>Category Chunein</label><input type="text" id="pCategory"
+                                    list="categoryOptions" required placeholder="Select or Type">
+                                <datalist id="categoryOptions">
+                                    <option value="Kurta">
+                                    <option value="Shalwar Kameez">
+                                    <option value="Waistcoats">
+                                    <option value="Accessories">
+                                </datalist>
+                            </div>
+                            <div class="form-group"><label>Product Image (URL ya Upload)</label>
+                                <div style="display: flex; gap: 10px;"><input type="url" id="pImage" required
+                                        placeholder="Paste link or upload from gallery"><button type="button"
+                                        id="uploadBtn"
+                                        style="background: var(--clr-add); color: white; border: none; border-radius: 12px; padding: 0 20px; font-weight: 600; cursor: pointer;">Gallery</button>
+                                </div>
+                                <input type="file" id="imageUpload" accept="image/*" style="display:none;">
+                                <p id="uploadStatus"
+                                    style="font-size: 0.75rem; color: #28c76f; margin-top: 5px; display: none;">Photo
+                                    upload ho rahi he...</p>
+                            </div>
+                        </div>
+                        <div class="form-group"><label>Description (Optional)</label><textarea id="pDesc" rows="3"
+                                placeholder="Product ke baare mein kuch kahein..."></textarea></div>
+                        <button type="submit"
+                            style="width: 100%; background: var(--accent); color: white; padding: 18px; border-radius: 12px; font-weight: 800; cursor: pointer; border: none; margin-top: 10px; font-size: 1rem;">Product
+                            Store Karen</button>
+                    </form>
+                </div>
+            </main>
+        </div>
+    </div>
+    <div id="toastContainer" class="toast-container"></div>
+    <script type="module" src="admin.js"></script>
+</body>
+
+</html>
