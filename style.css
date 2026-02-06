@@ -894,25 +894,25 @@ footer {
 .back-btn-container {
     padding: 20px 0 0 20px;
     position: absolute;
-    top: 140px;
+    top: 85px;
     left: 20px;
-    z-index: 1000;
+    z-index: 100;
 }
 
 .back-btn {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.4);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 10px 20px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 8px 16px;
     border-radius: 50px;
     color: #000;
     text-decoration: none;
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     cursor: pointer;
     transition: 0.3s;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
@@ -931,14 +931,14 @@ footer {
 
 @media (max-width: 900px) {
     .back-btn-container {
-        top: 100px;
+        top: 75px;
         left: 10px;
-        padding: 10px;
+        padding: 5px;
     }
 
     .back-btn {
-        padding: 8px 15px;
-        font-size: 0.8rem;
+        padding: 6px 12px;
+        font-size: 0.75rem;
     }
 }
 
