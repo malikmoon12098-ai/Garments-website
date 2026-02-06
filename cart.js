@@ -1,5 +1,6 @@
 import { db } from './firebase-config.js';
 import { doc, getDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { showToast } from './ui-utils.js';
 
 const cartList = document.getElementById('cartList');
 const cartSummary = document.getElementById('cartSummary');
@@ -122,7 +123,7 @@ if (directOrderForm) {
 
         } catch (err) {
             console.error(err);
-            alert("Order failed: " + err.message);
+            showToast("Order failed: " + err.message, "error");
             confirmBtn.disabled = false;
             confirmBtn.textContent = "Confirm Order";
         }

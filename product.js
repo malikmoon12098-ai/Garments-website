@@ -1,5 +1,6 @@
 import { db } from './firebase-config.js';
 import { doc, getDoc, collection, addDoc, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { showToast } from './ui-utils.js';
 
 const params = new URLSearchParams(window.location.search);
 const productId = params.get('id');
@@ -168,7 +169,7 @@ if (buyNowBtn) {
                         logInquiry('Instagram');
                         // Instagram doesn't support pre-fill text via URL, so we copy to clipboard
                         navigator.clipboard.writeText(productDetails).then(() => {
-                            alert("Bhai, product details copy ho gayi hain! Instagram pe ja kar bas 'Paste' kar den.");
+                            showToast("Product details copy ho gayi hain! Instagram pe ja kar 'Paste' kar den.", "success");
                             window.open(data.insta, '_blank');
                         }).catch(() => {
                             window.open(data.insta, '_blank');

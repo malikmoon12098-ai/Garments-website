@@ -94,10 +94,15 @@ function attachOrderListeners() {
         }
     });
     document.querySelectorAll('.delete-order-btn').forEach(btn => {
-        btn.onclick = async () => {
-            if (confirm("Delete this order?")) {
-                try { await deleteDoc(doc(db, "orders", btn.dataset.id)); showToast("Deleted", "success"); } catch (e) { showToast(e.message, "error"); }
-            }
+        btn.onclick = () => {
+            showConfirm("Kya aap waqai delete karna chahte hain?", "Ye order dashboard se hamesha ke liye khatam ho jaye ga.", async () => {
+                try {
+                    await deleteDoc(doc(db, "orders", btn.dataset.id));
+                    showToast("Order Delete Ho Gaya!", "success");
+                } catch (e) {
+                    showToast(e.message, "error");
+                }
+            });
         }
     });
 }
@@ -178,12 +183,26 @@ function attachProductListeners() {
         btn.onclick = async () => {
             const id = btn.dataset.id;
             const current = btn.dataset.status === 'true';
-            try { await updateDoc(doc(db, "products", id), { inStock: !current }); loadProducts(); } catch (e) { alert(e.message); }
+            try {
+                await updateDoc(doc(db, "products", id), { inStock: !current });
+                loadProducts();
+                showToast("Stock Status Updated!", "success");
+            } catch (e) {
+                showToast(e.message, "error");
+            }
         }
     });
     document.querySelectorAll('.delete-product').forEach(btn => {
-        btn.onclick = async () => {
-            if (confirm("Remove product?")) { try { await deleteDoc(doc(db, "products", btn.dataset.id)); loadProducts(); } catch (e) { alert(e.message); } }
+        btn.onclick = () => {
+            showConfirm("Product Remove Karen?", "Ye item aapki shop se gayab ho jaye ga.", async () => {
+                try {
+                    await deleteDoc(doc(db, "products", btn.dataset.id));
+                    loadProducts();
+                    showToast("Product Removed Successfully!", "success");
+                } catch (e) {
+                    showToast(e.message, "error");
+                }
+            });
         }
     });
 }
