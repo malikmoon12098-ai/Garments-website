@@ -5,7 +5,15 @@ import { checkAuth, highlightSidebar, showToast, escapeHTML, showConfirm } from 
 
 // --- INITIALIZE PAGE ---
 document.addEventListener('DOMContentLoaded', () => {
-    checkAuth();
+    // FORCE CHECK: If not logged in and NOT on lock page -> GO TO LOCK PAGE
+    const isAuth = sessionStorage.getItem('adminAuth');
+    const isLockPage = window.location.pathname.includes('admin-lock.html');
+
+    if (!isAuth && !isLockPage) {
+        window.location.replace('admin-lock.html'); // Use replace to prevent back button loop
+        return; // Stop further execution
+    }
+
     highlightSidebar();
 
     const currentPage = window.location.pathname.split('/').pop();
