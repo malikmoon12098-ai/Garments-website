@@ -37,6 +37,7 @@ const closeSocialModal = document.getElementById('closeSocialModal');
 const btnWA = document.getElementById('buyWhatsApp');
 const btnFB = document.getElementById('buyFacebook');
 const btnIG = document.getElementById('buyInstagram');
+const btnDirect = document.getElementById('buyDirect');
 
 let currentProduct = null;
 
@@ -204,6 +205,15 @@ if (buyNowBtn) {
                         window.open(url, '_blank');
                     });
                 };
+
+                // Direct Order Button in Social Modal
+                if (btnDirect) {
+                    btnDirect.onclick = () => {
+                        socialModal.style.display = 'none';
+                        orderModal.style.display = 'flex';
+                        // Keep body overflow hidden
+                    };
+                }
 
                 if (true) { // Always show modal
                     socialModal.style.display = 'flex';

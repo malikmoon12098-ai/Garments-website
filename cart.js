@@ -120,6 +120,76 @@ if (checkoutWhatsAppBtn) {
             checkoutWhatsAppBtn.disabled = false;
         }
     };
+    };
+}
+
+// Facebook & Instagram Checkout Logic
+const checkoutFacebookBtn = document.getElementById('checkoutFacebookBtn');
+const checkoutInstagramBtn = document.getElementById('checkoutInstagramBtn');
+
+async function handleSocialCheckout(platform) {
+    if (cart.length === 0) return;
+
+    const btn = platform === 'Facebook' ? checkoutFacebookBtn : checkoutInstagramBtn;
+    const originalText = btn.textContent;
+    btn.textContent = "Processing...";
+    btn.disabled = true;
+
+    try {
+        const contactSnap = await getDoc(doc(db, "settings", "contact"));
+        btn.textContent = originalText;
+        btn.disabled = false;
+
+        let totalBill = 0;
+        let summaryString = "Assalam o Alaikum! I want to order these items from my cart:\n\n";
+
+        cart.forEach((item, index) => {
+            const qty = item.qty || 1;
+            const price = parseFloat(item.price);
+            totalBill += price * qty;
+            summaryString += `${index + 1}. *${item.name}*\n   Qty: ${qty} | Price: Rs. ${price.toLocaleString()}\n\n`;
+        });
+
+        summaryString += `*Total Amount: Rs. ${totalBill.toLocaleString()}*`;
+
+        // Copy to clipboard
+        await navigator.clipboard.writeText(summaryString);
+        showToast("Order copied! Paste it in chat.", "success");
+
+        if (contactSnap.exists()) {
+            const data = contactSnap.data();
+            if (platform === 'Facebook') {
+                if (data.fb) {
+                    let pageId = data.fb.trim();
+                    if (pageId.includes('facebook.com/')) {
+                        pageId = pageId.split('facebook.com/')[1].split('/')[0].split('?')[0];
+                    }
+                    window.open(`https://m.me/${pageId}`, '_blank');
+                } else {
+                    window.open("https://facebook.com", "_blank");
+                }
+            } else if (platform === 'Instagram') {
+                const url = data.insta ? data.insta : "https://instagram.com";
+                window.open(url, '_blank');
+            }
+        } else {
+            // Fallback
+             window.open(platform === 'Facebook' ? "https://facebook.com" : "https://instagram.com", "_blank");
+        }
+
+    } catch (err) {
+        console.error(err);
+        showToast("Error processing request", "error");
+        btn.textContent = originalText;
+        btn.disabled = false;
+    }
+}
+
+if (checkoutFacebookBtn) {
+    checkoutFacebookBtn.onclick = () => handleSocialCheckout('Facebook');
+}
+if (checkoutInstagramBtn) {
+    checkoutInstagramBtn.onclick = () => handleSocialCheckout('Instagram');
 }
 if (closeModal) {
     closeModal.onclick = () => {
