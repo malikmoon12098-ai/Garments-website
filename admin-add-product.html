@@ -13,7 +13,7 @@
 <body>
     <div id="adminMainContent">
         <header class="admin-header">
-            <div class="logo"><img src="images/logo.png" alt="KHADER"></div>
+            <div class="logo"><img src="images/logo.png" alt="Klader"></div>
             <div style="display: flex; gap: 20px;">
             </div>
         </header>
@@ -45,32 +45,28 @@
                                     <option value="Accessories">
                                 </datalist>
                             </div>
-                            <div class="form-group"><label>Product Image (URL ya Upload)</label>
-                                <div style="display: flex; gap: 10px;">
-                                    <input type="url" id="pImage" required
-                                        placeholder="Paste link or Select from Gallery">
-                                    <button type="button" id="uploadBtn"
-                                        style="background: var(--clr-add); color: white; border: none; border-radius: 12px; padding: 0 20px; font-weight: 600; cursor: pointer; white-space: nowrap;">
-                                        📷 Gallery
-                                    </button>
-                                </div>
-                                <p id="uploadStatus"
-                                    style="font-size: 0.75rem; color: #28c76f; margin-top: 5px; display: none;">
-                                    Processing Image...</p>
+                            <div class="form-group"><label>Target (Gender)</label>
+                                <select id="pTarget" required
+                                    style="width: 100%; padding: 12px; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; background: rgba(255,255,255,0.05); color: white;">
+                                    <option value="MEN">MEN</option>
+                                    <option value="WOMEN">WOMEN</option>
+                                    <option value="KIDS">KIDS</option>
+                                </select>
                             </div>
                         </div>
-                        <input type="file" id="imageUpload" accept="image/*" style="display:none;">
                         <div class="grid-two">
-                            <div class="form-group"><label>Initial Stock (Quantity)</label><input type="number"
-                                    id="pStock" required placeholder="100"></div>
-                            <div class="form-group"><label>Low Stock Alert Level</label><input type="number"
-                                    id="pThreshold" required placeholder="5"></div>
-                        </div>
-                        <div class="form-group"><label>Description (Optional)</label><textarea id="pDesc" rows="3"
-                                placeholder="Product ke baare mein kuch kahein..."></textarea></div>
-                        <button type="submit"
-                            style="width: 100%; background: var(--accent); color: white; padding: 18px; border-radius: 12px; font-weight: 800; cursor: pointer; border: none; margin-top: 10px; font-size: 1rem;">Product
-                            Store Karen</button>
+                            <input type="file" id="imageUpload" accept="image/*" style="display:none;">
+                            <div class="grid-two">
+                                <div class="form-group"><label>Initial Stock (Quantity)</label><input type="number"
+                                        id="pStock" required placeholder="100"></div>
+                                <div class="form-group"><label>Low Stock Alert Level</label><input type="number"
+                                        id="pThreshold" required placeholder="5"></div>
+                            </div>
+                            <div class="form-group"><label>Description (Optional)</label><textarea id="pDesc" rows="3"
+                                    placeholder="Product ke baare mein kuch kahein..."></textarea></div>
+                            <button type="submit"
+                                style="width: 100%; background: var(--accent); color: white; padding: 18px; border-radius: 12px; font-weight: 800; cursor: pointer; border: none; margin-top: 10px; font-size: 1rem;">Product
+                                Store Karen</button>
                     </form>
                 </div>
             </main>

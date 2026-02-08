@@ -77,20 +77,34 @@ export function showConfirm(title, message, callback) {
 
 // --- SOCIAL DEEP LINKING ---
 
-export function openSocialApp(platform, webUrl, appUri) {
+export function openSocialApp(platform, webUrl, appUri, fallbackCallback) {
+    let appOpened = false;
+
+    // Function to handle visibility change
+    const handleVisibilityChange = () => {
+        if (document.hidden) {
+            appOpened = true;
+        }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
     // 1. Attempt to open via Custom URI Scheme (Deep Link)
-    // This usually works on mobile if the app is installed.
-    // If not installed, it might do nothing or show an error briefly.
     if (appUri) {
         window.location.href = appUri;
     }
 
-    // 2. Fallback to Web URL after a delay
-    // If the app opened, the browser might go to background, potentially pausing this timer.
-    // If the app didn't open (e.g. desktop or app missing), this timer fires and opens the web version.
+    // 2. Fallback after a delay
     setTimeout(() => {
-        // We open in a new tab to avoid losing the current page context if the deep link failed silently.
-        // Also good for desktop users who just want the link.
-        window.open(webUrl, '_blank');
-    }, 1500);
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+
+        if (!appOpened && !document.hidden) {
+            if (fallbackCallback) {
+                fallbackCallback();
+            } else if (webUrl) {
+                window.open(webUrl, '_blank');
+            }
+        }
+    }, 2000);
 }
+

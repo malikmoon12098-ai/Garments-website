@@ -8,12 +8,12 @@ const noResults = document.getElementById('noResults');
 
 let allProducts = [];
 let activeCategory = 'All';
+let activeGender = 'All';
 let searchTerm = '';
 
 // Load all products once
 async function initShop() {
     try {
-        // FIXED: Removed orderBy
         const q = query(collection(db, "products"));
         const querySnapshot = await getDocs(q);
 
@@ -30,6 +30,7 @@ async function initShop() {
         });
 
         setupCategoryTabs();
+        setupGenderTabs();
         renderProducts();
 
     } catch (error) {
@@ -42,19 +43,17 @@ async function initShop() {
 
 // Generate Category Tabs dynamically
 function setupCategoryTabs() {
-    // Get unique categories from products
     const categories = ['All', ...new Set(allProducts.map(p => p.category))];
 
     tabsContainer.innerHTML = categories.map(cat => `
         <button class="filter-btn ${cat === activeCategory ? 'active' : ''}" data-category="${cat}">
-            ${cat}
+            ${cat === 'All' ? 'All Categories' : cat}
         </button>
     `).join('');
 
-    // Add click events to tabs
-    document.querySelectorAll('.filter-btn').forEach(btn => {
+    document.querySelectorAll('#categoryTabs .filter-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('#categoryTabs .filter-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             activeCategory = btn.getAttribute('data-category');
             renderProducts();
@@ -62,29 +61,36 @@ function setupCategoryTabs() {
     });
 }
 
+function setupGenderTabs() {
+    document.querySelectorAll('#genderTabs .filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('#genderTabs .filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            activeGender = btn.getAttribute('data-gender');
+            renderProducts();
+        });
+    });
+}
+
 // Filter and Render Products
 function renderProducts() {
-    // 1. Filter by Category and Search Term
     const filtered = allProducts.filter(p => {
         const matchesCategory = activeCategory === 'All' || p.category === activeCategory;
+        const matchesGender = activeGender === 'All' || p.target === activeGender;
         const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            p.category.toLowerCase().includes(searchTerm.toLowerCase());
-        return matchesCategory && matchesSearch;
+            p.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (p.target && p.target.toLowerCase().includes(searchTerm.toLowerCase()));
+        return matchesCategory && matchesGender && matchesSearch;
     });
 
-    // 2. Clear Grid
     shopGrid.innerHTML = '';
 
-    // 3. Handle No Results
     if (filtered.length === 0) {
         noResults.style.display = 'block';
         return;
     }
     noResults.style.display = 'none';
 
-    // 4. Inject Product Cards
-    // 4. Inject Product Cards
-    // 4. Inject Product Cards
     shopGrid.innerHTML = filtered.map(p => {
         const isOutOfStock = p.inStock === false;
         return `
@@ -96,7 +102,7 @@ function renderProducts() {
                          style="${isOutOfStock ? 'filter: grayscale(100%); opacity: 0.7;' : ''}">
                 </div>
                 <div class="product-info">
-                    <span class="category">${p.category}</span>
+                    <span class="category">${p.target || 'MEN'} | ${p.category}</span>
                     <h3 class="name">${p.name}</h3>
                     <span class="price">Rs. ${parseFloat(p.price).toLocaleString()}</span>
                 </div>

@@ -112,7 +112,11 @@ if (checkoutWhatsAppBtn) {
                     const webUrl = `https://wa.me/${cleanPhone}?text=${text}`;
                     const appUri = `whatsapp://send?phone=${cleanPhone}&text=${text}`;
 
-                    openSocialApp('WhatsApp', webUrl, appUri);
+                    openSocialApp('WhatsApp', null, appUri, () => {
+                        showToast("WhatsApp app not found. Switching to Direct Order Form...", "info");
+                        orderModal.style.display = 'flex';
+                        document.body.style.overflow = 'hidden';
+                    });
                 } else {
                     showToast("Store WhatsApp number not set.", "error");
                 }
@@ -125,87 +129,6 @@ if (checkoutWhatsAppBtn) {
     };
 }
 
-// Facebook & Instagram Checkout Logic
-const checkoutFacebookBtn = document.getElementById('checkoutFacebookBtn');
-const checkoutInstagramBtn = document.getElementById('checkoutInstagramBtn');
-
-async function handleSocialCheckout(platform) {
-    if (cart.length === 0) return;
-
-    const btn = platform === 'Facebook' ? checkoutFacebookBtn : checkoutInstagramBtn;
-    const originalText = btn.textContent;
-    btn.textContent = "Processing...";
-    btn.disabled = true;
-
-    try {
-        const contactSnap = await getDoc(doc(db, "settings", "contact"));
-        btn.textContent = originalText;
-        btn.disabled = false;
-
-        let totalBill = 0;
-        let summaryString = "Assalam o Alaikum! I want to order these items from my cart:\n\n";
-
-        cart.forEach((item, index) => {
-            const qty = item.qty || 1;
-            const price = parseFloat(item.price);
-            totalBill += price * qty;
-            summaryString += `${index + 1}. *${item.name}*\n   Qty: ${qty} | Price: Rs. ${price.toLocaleString()}\n\n`;
-        });
-
-        summaryString += `*Total Amount: Rs. ${totalBill.toLocaleString()}*`;
-
-        // Copy to clipboard
-        await navigator.clipboard.writeText(summaryString);
-        showToast("Order copied! Paste it in chat.", "success");
-
-        if (contactSnap.exists()) {
-            const data = contactSnap.data();
-            if (platform === 'Facebook') {
-                if (data.fb) {
-                    let fbUrl = data.fb.trim();
-                    if (!fbUrl.startsWith('http')) {
-                        fbUrl = `https://facebook.com/${fbUrl}`;
-                    }
-                    const appUri = `fb://facewebmodal/f?href=${encodeURIComponent(fbUrl)}`;
-                    openSocialApp('Facebook', fbUrl, appUri);
-                } else {
-                    openSocialApp('Facebook', "https://facebook.com", "fb://feed");
-                }
-            } else if (platform === 'Instagram') {
-                const webUrl = data.insta ? data.insta : "https://instagram.com";
-                let appUri = "instagram://app";
-
-                if (data.insta) {
-                    try {
-                        const urlObj = new URL(data.insta);
-                        const path = urlObj.pathname.split('/').filter(p => p);
-                        if (path.length > 0) {
-                            appUri = `instagram://user?username=${path[0]}`;
-                        }
-                    } catch (e) { }
-                }
-                openSocialApp('Instagram', webUrl, appUri);
-            }
-        } else {
-            // Fallback
-            if (platform === 'Facebook') openSocialApp('Facebook', "https://facebook.com", "fb://feed");
-            else openSocialApp('Instagram', "https://instagram.com", "instagram://app");
-        }
-
-    } catch (err) {
-        console.error(err);
-        showToast("Error processing request", "error");
-        btn.textContent = originalText;
-        btn.disabled = false;
-    }
-}
-
-if (checkoutFacebookBtn) {
-    checkoutFacebookBtn.onclick = () => handleSocialCheckout('Facebook');
-}
-if (checkoutInstagramBtn) {
-    checkoutInstagramBtn.onclick = () => handleSocialCheckout('Instagram');
-}
 if (closeModal) {
     closeModal.onclick = () => {
         orderModal.style.display = 'none';

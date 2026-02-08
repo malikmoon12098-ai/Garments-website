@@ -35,11 +35,11 @@ const phoneError = document.getElementById('phoneError');
 const socialModal = document.getElementById('socialContactModal');
 const closeSocialModal = document.getElementById('closeSocialModal');
 const btnWA = document.getElementById('buyWhatsApp');
-const btnFB = document.getElementById('buyFacebook');
-const btnIG = document.getElementById('buyInstagram');
 const btnDirect = document.getElementById('buyDirect');
 
+
 let currentProduct = null;
+let contactSettings = null; // Store settings globally
 
 async function initProduct() {
     if (!productId) {
@@ -58,6 +58,16 @@ async function initProduct() {
             loadingDiv.innerHTML = '<p>Product not found.</p>';
             return;
         }
+
+        // Pre-load contact settings
+        try {
+            const contactSnap = await getDoc(doc(db, "settings", "contact"));
+            if (contactSnap.exists()) {
+                contactSettings = contactSnap.data();
+            }
+        } catch (e) {
+            console.error("Error loading settings:", e);
+        }
     } catch (error) {
         console.error("Error loading product:", error);
         loadingDiv.innerHTML = '<p>Error loading product details.</p>';
@@ -67,6 +77,8 @@ async function initProduct() {
 function renderProduct(product) {
     imgEl.src = product.image;
     catEl.textContent = product.category;
+    const targetEl = document.getElementById('displayTarget');
+    if (targetEl) targetEl.textContent = product.target || 'MEN';
     titleEl.textContent = product.name;
     priceEl.textContent = `Rs. ${parseFloat(product.price).toLocaleString()}`;
     descEl.textContent = product.description || "No description available for this product.";
@@ -106,70 +118,36 @@ if (qtyMinus) {
 
 // Modal Toggle
 if (buyNowBtn) {
-    buyNowBtn.onclick = async () => {
+    buyNowBtn.onclick = () => {
         if (!currentProduct) return;
 
-        // Show loading state on button
         const originalText = buyNowBtn.textContent;
-        buyNowBtn.textContent = "Connecting...";
-        buyNowBtn.disabled = true;
+        // Check pre-loaded settings
+        const data = contactSettings;
 
         try {
-            const contactSnap = await getDoc(doc(db, "settings", "contact"));
-            buyNowBtn.textContent = originalText;
-            buyNowBtn.disabled = false;
-
-            if (contactSnap.exists()) {
-                const data = contactSnap.data();
-                let showCount = 0;
-
+            if (data) {
                 const productDetails = `Assalam o Alaikum! I'm interested in buying this product:\n\n*Product:* ${currentProduct.name}\n*Price:* Rs. ${currentProduct.price}\n*Qty:* ${qtyInput.value}\n*Link:* ${window.location.href}`;
 
-                // Helper to log inquiry
-                const logInquiry = async (platform) => {
-                    try {
-                        const inquiry = {
-                            productId: currentProduct.id,
-                            productName: currentProduct.name,
-                            productPrice: currentProduct.price,
-                            productImage: currentProduct.image,
-                            platform: platform,
-                            status: 'new', // new | converted
-                            timestamp: serverTimestamp(),
-                            qty: parseInt(qtyInput.value) || 1
-                        };
-                        console.log("Logging inquiry:", inquiry);
-                        await addDoc(collection(db, "inquiries"), inquiry);
-                    } catch (e) {
-                        console.error("Error logging inquiry", e);
-                    }
+                // Helper to log inquiry (Fire and forget - no await)
+                const logInquiry = (platform) => {
+                    const inquiry = {
+                        productId: currentProduct.id,
+                        productName: currentProduct.name,
+                        productPrice: currentProduct.price,
+                        productImage: currentProduct.image,
+                        platform: platform,
+                        status: 'new',
+                        timestamp: serverTimestamp(),
+                        qty: parseInt(qtyInput.value) || 1
+                    };
+                    addDoc(collection(db, "inquiries"), inquiry).catch(e => console.error("Error logging inquiry", e));
                 };
 
                 if (data.phone) {
-                    btnWA.style.display = 'block';
-                    showCount++;
-                    btnWA.onclick = async () => {
-                        await logInquiry('WhatsApp');
-                        let cleanPhone = data.phone.replace(/\D/g, '');
-                        if (cleanPhone.startsWith('0')) {
-                            cleanPhone = '92' + cleanPhone.substring(1);
-                        } else if (!cleanPhone.startsWith('92')) {
-                            cleanPhone = '92' + cleanPhone;
-                        }
-                        const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(productDetails)}`;
-                        window.open(url, '_blank');
-                    };
-                } else { btnWA.style.display = 'block'; /* Show anyway for consistent UX, defaulting to log only or error if no phone? user asked for buttons. Assuming phone is set. */ }
+                    btnWA.onclick = () => {
+                        logInquiry('WhatsApp');
 
-                // Force display buttons as per user request, even if contact settings missing (fallback to just logging or partial fail)
-                // Actually, let's keep the check but ensure elements are visible if data exists.
-                // The user's request implies these should ALWAYS work.
-
-                // RE-BINDING CLICK HANDLERS WITH LOGGING
-
-                btnWA.onclick = async () => {
-                    await logInquiry('WhatsApp');
-                    if (data.phone) {
                         let cleanPhone = data.phone.replace(/\D/g, '');
                         if (cleanPhone.startsWith('0')) cleanPhone = '92' + cleanPhone.substring(1);
                         else if (!cleanPhone.startsWith('92')) cleanPhone = '92' + cleanPhone;
@@ -178,81 +156,28 @@ if (buyNowBtn) {
                         const webUrl = `https://wa.me/${cleanPhone}?text=${text}`;
                         const appUri = `whatsapp://send?phone=${cleanPhone}&text=${text}`;
 
-                        openSocialApp('WhatsApp', webUrl, appUri);
-                    } else {
-                        alert("WhatsApp number not set in Admin Settings!");
-                    }
-                };
+                        // Fallback to Direct Order if WhatsApp app is not found
+                        openSocialApp('WhatsApp', null, appUri, () => {
+                            showToast("WhatsApp app not found. Switching to Direct Order Form...", "info");
+                            socialModal.style.display = 'none';
+                            orderModal.style.display = 'flex';
+                        });
+                    };
+                }
 
-                btnFB.onclick = async () => {
-                    await logInquiry('Facebook');
-                    navigator.clipboard.writeText(productDetails).then(() => {
-                        showToast("Details copied! Paste in Messenger/Facebook.", "info");
-
-                        if (data.fb) {
-                            let fbUrl = data.fb.trim();
-                            // If just a username/ID is stored (old way), handle it, though we now prefer full URL
-                            // Assuming full URL is stored based on previous task updates.
-                            if (!fbUrl.startsWith('http')) {
-                                fbUrl = `https://facebook.com/${fbUrl}`;
-                            }
-
-                            // Attempt to extract handle/ID for deep link
-                            // Deep link format: fb://facewebmodal/f?href=[URL] or fb://profile/[ID]
-                            // Simplest is try to open the URL with system handler which might catch it, 
-                            // OR use a specific scheme if we knew the ID. 
-                            // Since we might only have a URL, let's use the URL as fallback 
-                            // and try a generic scheme if possible, but fb://facewebmodal/f?href= works well for pages.
-
-                            const appUri = `fb://facewebmodal/f?href=${encodeURIComponent(fbUrl)}`;
-                            openSocialApp('Facebook', fbUrl, appUri);
-                        } else {
-                            openSocialApp('Facebook', "https://facebook.com", "fb://feed");
-                        }
-                    });
-                };
-
-                btnIG.onclick = async () => {
-                    await logInquiry('Instagram');
-                    navigator.clipboard.writeText(productDetails).then(() => {
-                        showToast("Details copied! Paste in Instagram.", "info");
-
-                        const webUrl = data.insta ? data.insta : "https://instagram.com";
-                        let appUri = "instagram://app"; // Default to open app
-
-                        if (data.insta) {
-                            // Try to extract username
-                            try {
-                                const urlObj = new URL(data.insta);
-                                const path = urlObj.pathname.split('/').filter(p => p);
-                                if (path.length > 0) {
-                                    const username = path[0];
-                                    appUri = `instagram://user?username=${username}`;
-                                }
-                            } catch (e) {
-                                // If not a valid URL object, maybe it's just a username?
-                                // Only if it doesn't start with http. But we assume http storage.
-                            }
-                        }
-
-                        openSocialApp('Instagram', webUrl, appUri);
-                    });
-                };
-
-                // Direct Order Button in Social Modal
+                // Direct Order Button
                 if (btnDirect) {
                     btnDirect.onclick = () => {
                         socialModal.style.display = 'none';
                         orderModal.style.display = 'flex';
-                        // Keep body overflow hidden
                     };
                 }
 
-                if (true) { // Always show modal
-                    socialModal.style.display = 'flex';
-                    document.body.style.overflow = 'hidden';
-                }
+                socialModal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+
             } else {
+                // If no settings loaded, fallback to direct order modal
                 orderModal.style.display = 'flex';
                 document.body.style.overflow = 'hidden';
             }

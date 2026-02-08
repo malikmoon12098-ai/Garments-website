@@ -166,6 +166,7 @@ function initAddProductForm() {
             name: document.getElementById('pName').value,
             price: parseFloat(document.getElementById('pPrice').value),
             category: document.getElementById('pCategory').value,
+            target: document.getElementById('pTarget').value,
             image: document.getElementById('pImage').value,
             description: document.getElementById('pDesc').value,
             stock: parseInt(document.getElementById('pStock').value) || 0,
@@ -710,6 +711,7 @@ async function openEditModal(id) {
             document.getElementById('editName').value = product.name || '';
             document.getElementById('editPrice').value = product.price || 0;
             document.getElementById('editCategory').value = product.category || '';
+            document.getElementById('editTarget').value = product.target || 'MEN';
             document.getElementById('editImage').value = product.image || '';
             document.getElementById('editStock').value = product.stock || 0;
             document.getElementById('editThreshold').value = product.threshold || 0;
@@ -737,6 +739,7 @@ function initEditProductForm() {
             name: document.getElementById('editName').value,
             price: parseFloat(document.getElementById('editPrice').value),
             category: document.getElementById('editCategory').value,
+            target: document.getElementById('editTarget').value,
             image: document.getElementById('editImage').value,
             stock: stock,
             threshold: parseInt(document.getElementById('editThreshold').value) || 0,
