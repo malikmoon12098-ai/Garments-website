@@ -638,12 +638,26 @@ function initSettingsForm() {
     if (!form) return;
     form.onsubmit = async (e) => {
         e.preventDefault();
+        let insta = document.getElementById('cInsta').value.trim();
+        let fb = document.getElementById('cFB').value.trim();
+
+        // Auto-format Instagram
+        if (insta && !insta.startsWith('http')) {
+            if (insta.startsWith('@')) insta = insta.substring(1);
+            insta = `https://instagram.com/${insta}`;
+        }
+
+        // Auto-format Facebook
+        if (fb && !fb.startsWith('http')) {
+            fb = `https://facebook.com/${fb}`;
+        }
+
         const data = {
             phone: document.getElementById('cPhone').value,
             email: document.getElementById('cEmail').value,
             address: document.getElementById('cAddress').value,
-            insta: document.getElementById('cInsta').value,
-            fb: document.getElementById('cFB').value,
+            insta: insta,
+            fb: fb,
             updatedAt: serverTimestamp()
         };
         try { await setDoc(doc(db, "settings", "contact"), data); showToast("Settings Updated!", "success"); } catch (e) { showToast(e.message, "error"); }
