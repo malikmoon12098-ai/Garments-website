@@ -744,13 +744,30 @@ footer {
     font-family: inherit;
 }
 
-.filter-tabs {
+.filter-tabs, .gender-filters {
     display: flex;
     gap: 12px;
     justify-content: center;
-    margin-bottom: 4rem;
+    margin-bottom: 2rem;
     flex-wrap: wrap;
     padding: 0 1rem;
+}
+
+@media (max-width: 768px) {
+    .filter-tabs, .gender-filters {
+        justify-content: flex-start;
+        overflow-x: auto;
+        white-space: nowrap;
+        flex-wrap: nowrap;
+        padding-bottom: 15px;
+        scrollbar-width: none; /* Hide scrollbar Firefox */
+        -ms-overflow-style: none; /* Hide scrollbar IE/Edge */
+    }
+    
+    .filter-tabs::-webkit-scrollbar, 
+    .gender-filters::-webkit-scrollbar {
+        display: none; /* Hide scrollbar Chrome/Safari */
+    }
 }
 
 .filter-btn {
