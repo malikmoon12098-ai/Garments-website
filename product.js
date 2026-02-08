@@ -1,6 +1,6 @@
 import { db } from './firebase-config.js';
 import { doc, getDoc, collection, addDoc, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { showToast } from './ui-utils.js';
+import { showToast, openSocialApp } from './ui-utils.js';
 
 const params = new URLSearchParams(window.location.search);
 const productId = params.get('id');
@@ -173,8 +173,12 @@ if (buyNowBtn) {
                         let cleanPhone = data.phone.replace(/\D/g, '');
                         if (cleanPhone.startsWith('0')) cleanPhone = '92' + cleanPhone.substring(1);
                         else if (!cleanPhone.startsWith('92')) cleanPhone = '92' + cleanPhone;
-                        const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(productDetails)}`;
-                        window.open(url, '_blank');
+
+                        const text = encodeURIComponent(productDetails);
+                        const webUrl = `https://wa.me/${cleanPhone}?text=${text}`;
+                        const appUri = `whatsapp://send?phone=${cleanPhone}&text=${text}`;
+
+                        openSocialApp('WhatsApp', webUrl, appUri);
                     } else {
                         alert("WhatsApp number not set in Admin Settings!");
                     }
@@ -183,16 +187,27 @@ if (buyNowBtn) {
                 btnFB.onclick = async () => {
                     await logInquiry('Facebook');
                     navigator.clipboard.writeText(productDetails).then(() => {
-                        showToast("Details copied! Paste in Messenger.", "success");
+                        showToast("Details copied! Paste in Messenger/Facebook.", "info");
+
                         if (data.fb) {
-                            let pageId = data.fb.trim();
-                            if (pageId.includes('facebook.com/')) {
-                                pageId = pageId.split('facebook.com/')[1].split('/')[0].split('?')[0];
+                            let fbUrl = data.fb.trim();
+                            // If just a username/ID is stored (old way), handle it, though we now prefer full URL
+                            // Assuming full URL is stored based on previous task updates.
+                            if (!fbUrl.startsWith('http')) {
+                                fbUrl = `https://facebook.com/${fbUrl}`;
                             }
-                            const url = `https://m.me/${pageId}`;
-                            window.open(url, '_blank');
+
+                            // Attempt to extract handle/ID for deep link
+                            // Deep link format: fb://facewebmodal/f?href=[URL] or fb://profile/[ID]
+                            // Simplest is try to open the URL with system handler which might catch it, 
+                            // OR use a specific scheme if we knew the ID. 
+                            // Since we might only have a URL, let's use the URL as fallback 
+                            // and try a generic scheme if possible, but fb://facewebmodal/f?href= works well for pages.
+
+                            const appUri = `fb://facewebmodal/f?href=${encodeURIComponent(fbUrl)}`;
+                            openSocialApp('Facebook', fbUrl, appUri);
                         } else {
-                            window.open("https://facebook.com", "_blank");
+                            openSocialApp('Facebook', "https://facebook.com", "fb://feed");
                         }
                     });
                 };
@@ -200,9 +215,27 @@ if (buyNowBtn) {
                 btnIG.onclick = async () => {
                     await logInquiry('Instagram');
                     navigator.clipboard.writeText(productDetails).then(() => {
-                        showToast("Details copied! Paste in Instagram.", "success");
-                        const url = data.insta ? data.insta : "https://instagram.com";
-                        window.open(url, '_blank');
+                        showToast("Details copied! Paste in Instagram.", "info");
+
+                        const webUrl = data.insta ? data.insta : "https://instagram.com";
+                        let appUri = "instagram://app"; // Default to open app
+
+                        if (data.insta) {
+                            // Try to extract username
+                            try {
+                                const urlObj = new URL(data.insta);
+                                const path = urlObj.pathname.split('/').filter(p => p);
+                                if (path.length > 0) {
+                                    const username = path[0];
+                                    appUri = `instagram://user?username=${username}`;
+                                }
+                            } catch (e) {
+                                // If not a valid URL object, maybe it's just a username?
+                                // Only if it doesn't start with http. But we assume http storage.
+                            }
+                        }
+
+                        openSocialApp('Instagram', webUrl, appUri);
                     });
                 };
 

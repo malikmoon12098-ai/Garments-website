@@ -74,3 +74,23 @@ export function showConfirm(title, message, callback) {
         if (e.target === overlay) close();
     };
 }
+
+// --- SOCIAL DEEP LINKING ---
+
+export function openSocialApp(platform, webUrl, appUri) {
+    // 1. Attempt to open via Custom URI Scheme (Deep Link)
+    // This usually works on mobile if the app is installed.
+    // If not installed, it might do nothing or show an error briefly.
+    if (appUri) {
+        window.location.href = appUri;
+    }
+
+    // 2. Fallback to Web URL after a delay
+    // If the app opened, the browser might go to background, potentially pausing this timer.
+    // If the app didn't open (e.g. desktop or app missing), this timer fires and opens the web version.
+    setTimeout(() => {
+        // We open in a new tab to avoid losing the current page context if the deep link failed silently.
+        // Also good for desktop users who just want the link.
+        window.open(webUrl, '_blank');
+    }, 1500);
+}

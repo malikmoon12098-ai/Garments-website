@@ -1,6 +1,6 @@
 import { db } from './firebase-config.js';
 import { doc, getDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { showToast } from './ui-utils.js';
+import { showToast, openSocialApp } from './ui-utils.js';
 
 const cartList = document.getElementById('cartList');
 const cartSummary = document.getElementById('cartSummary');
@@ -108,8 +108,11 @@ if (checkoutWhatsAppBtn) {
                         cleanPhone = '92' + cleanPhone;
                     }
 
-                    const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(summaryString)}`;
-                    window.open(url, '_blank');
+                    const text = encodeURIComponent(summaryString); // Full message
+                    const webUrl = `https://wa.me/${cleanPhone}?text=${text}`;
+                    const appUri = `whatsapp://send?phone=${cleanPhone}&text=${text}`;
+
+                    openSocialApp('WhatsApp', webUrl, appUri);
                 } else {
                     showToast("Store WhatsApp number not set.", "error");
                 }
@@ -159,21 +162,34 @@ async function handleSocialCheckout(platform) {
             const data = contactSnap.data();
             if (platform === 'Facebook') {
                 if (data.fb) {
-                    let pageId = data.fb.trim();
-                    if (pageId.includes('facebook.com/')) {
-                        pageId = pageId.split('facebook.com/')[1].split('/')[0].split('?')[0];
+                    let fbUrl = data.fb.trim();
+                    if (!fbUrl.startsWith('http')) {
+                        fbUrl = `https://facebook.com/${fbUrl}`;
                     }
-                    window.open(`https://m.me/${pageId}`, '_blank');
+                    const appUri = `fb://facewebmodal/f?href=${encodeURIComponent(fbUrl)}`;
+                    openSocialApp('Facebook', fbUrl, appUri);
                 } else {
-                    window.open("https://facebook.com", "_blank");
+                    openSocialApp('Facebook', "https://facebook.com", "fb://feed");
                 }
             } else if (platform === 'Instagram') {
-                const url = data.insta ? data.insta : "https://instagram.com";
-                window.open(url, '_blank');
+                const webUrl = data.insta ? data.insta : "https://instagram.com";
+                let appUri = "instagram://app";
+
+                if (data.insta) {
+                    try {
+                        const urlObj = new URL(data.insta);
+                        const path = urlObj.pathname.split('/').filter(p => p);
+                        if (path.length > 0) {
+                            appUri = `instagram://user?username=${path[0]}`;
+                        }
+                    } catch (e) { }
+                }
+                openSocialApp('Instagram', webUrl, appUri);
             }
         } else {
             // Fallback
-            window.open(platform === 'Facebook' ? "https://facebook.com" : "https://instagram.com", "_blank");
+            if (platform === 'Facebook') openSocialApp('Facebook', "https://facebook.com", "fb://feed");
+            else openSocialApp('Instagram', "https://instagram.com", "instagram://app");
         }
 
     } catch (err) {
