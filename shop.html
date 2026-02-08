@@ -61,17 +61,27 @@
             </div>
         </div>
 
-        <div class="gender-filters" id="genderTabs">
-            <button class="filter-btn active" data-gender="All">All Sections</button>
-            <button class="filter-btn" data-gender="MEN">MEN</button>
-            <button class="filter-btn" data-gender="WOMEN">WOMEN</button>
-            <button class="filter-btn" data-gender="KIDS">KIDS</button>
+        <div class="filter-controls"
+            style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; margin-bottom: 2rem;">
+            <div class="select-wrapper" style="position: relative; min-width: 180px;">
+                <select id="genderSelect" class="filter-select">
+                    <option value="All">All Sections</option>
+                    <option value="MEN">MEN</option>
+                    <option value="WOMEN">WOMEN</option>
+                    <option value="KIDS">KIDS</option>
+                </select>
+            </div>
+
+            <div class="select-wrapper" style="position: relative; min-width: 180px;">
+                <select id="categorySelect" class="filter-select">
+                    <option value="All">All Categories</option>
+                    <!-- Categories will be added here dynamically -->
+                </select>
+            </div>
         </div>
 
-        <div class="filter-tabs" id="categoryTabs">
-            <button class="filter-btn active" data-category="All">All Categories</button>
-            <!-- Categories will be added here dynamically -->
-        </div>
+        <div id="genderTabs" style="display: none;"></div>
+        <div id="categoryTabs" style="display: none;"></div>
 
         <div id="shopGrid" class="product-grid">
             <!-- Skeletons while loading -->

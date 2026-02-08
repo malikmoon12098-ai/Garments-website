@@ -41,34 +41,31 @@ async function initShop() {
     }
 }
 
-// Generate Category Tabs dynamically
+// Generate Category Dynamic Select
 function setupCategoryTabs() {
     const categories = ['All', ...new Set(allProducts.map(p => p.category))];
+    const categorySelect = document.getElementById('categorySelect');
+    if (!categorySelect) return;
 
-    tabsContainer.innerHTML = categories.map(cat => `
-        <button class="filter-btn ${cat === activeCategory ? 'active' : ''}" data-category="${cat}">
+    categorySelect.innerHTML = categories.map(cat => `
+        <option value="${cat}" ${cat === activeCategory ? 'selected' : ''}>
             ${cat === 'All' ? 'All Categories' : cat}
-        </button>
+        </option>
     `).join('');
 
-    document.querySelectorAll('#categoryTabs .filter-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('#categoryTabs .filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            activeCategory = btn.getAttribute('data-category');
-            renderProducts();
-        });
+    categorySelect.addEventListener('change', (e) => {
+        activeCategory = e.target.value;
+        renderProducts();
     });
 }
 
 function setupGenderTabs() {
-    document.querySelectorAll('#genderTabs .filter-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('#genderTabs .filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            activeGender = btn.getAttribute('data-gender');
-            renderProducts();
-        });
+    const genderSelect = document.getElementById('genderSelect');
+    if (!genderSelect) return;
+
+    genderSelect.addEventListener('change', (e) => {
+        activeGender = e.target.value;
+        renderProducts();
     });
 }
 
