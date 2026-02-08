@@ -120,7 +120,6 @@ if (checkoutWhatsAppBtn) {
             checkoutWhatsAppBtn.disabled = false;
         }
     };
-    };
 }
 
 // Facebook & Instagram Checkout Logic
@@ -174,7 +173,7 @@ async function handleSocialCheckout(platform) {
             }
         } else {
             // Fallback
-             window.open(platform === 'Facebook' ? "https://facebook.com" : "https://instagram.com", "_blank");
+            window.open(platform === 'Facebook' ? "https://facebook.com" : "https://instagram.com", "_blank");
         }
 
     } catch (err) {
@@ -249,5 +248,16 @@ if (directOrderForm) {
         }
     };
 }
+
+// Listen for updates from other pages or same page
+window.addEventListener('cartUpdated', () => {
+    cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    renderCart();
+});
+
+window.addEventListener('storage', () => {
+    cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    renderCart();
+});
 
 renderCart();

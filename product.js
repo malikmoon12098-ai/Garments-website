@@ -332,8 +332,13 @@ if (directOrderForm) {
 // Add to Cart Logic (Unchanged but updated for qty if needed, keeping it simple for now as requested)
 if (cartBtn) {
     cartBtn.addEventListener('click', () => {
-        if (!currentProduct) return;
+        console.log("Add to Cart clicked");
+        if (!currentProduct) {
+            console.error("No currentProduct found");
+            return;
+        }
         const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        console.log("Current Cart:", cart);
         const totalQty = parseInt(qtyInput.value);
 
         const existsIndex = cart.findIndex(item => item.id === currentProduct.id);
@@ -344,6 +349,7 @@ if (cartBtn) {
             cart.push({ ...currentProduct, qty: totalQty });
         }
 
+        console.log("New Cart:", cart);
         localStorage.setItem('cart', JSON.stringify(cart));
         window.dispatchEvent(new Event('cartUpdated'));
 
