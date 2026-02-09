@@ -264,7 +264,7 @@ if (directOrderForm) {
                 productId: currentProduct.id,
                 productName: currentProduct.name,
                 productPrice: currentProduct.price,
-                quantity: qty,
+                qty: qty,
                 totalPrice: currentProduct.price * qty,
                 status: 'pending',
                 timestamp: serverTimestamp(),

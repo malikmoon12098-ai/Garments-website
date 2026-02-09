@@ -23,17 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Redirect to Home on Refresh
-    try {
-        const perfEntries = performance.getEntriesByType("navigation");
-        if (perfEntries.length > 0 && perfEntries[0].type === "reload") {
-            if (!window.location.pathname.endsWith("index.html") && window.location.pathname !== "/") {
-                window.location.href = "index.html";
-            }
-        }
-    } catch (e) {
-        console.log("Navigation API not supported");
-    }
+
 
     // Featured Products Logic (Minimal fetch for Home)
     const featuredGrid = document.getElementById('featuredGrid');

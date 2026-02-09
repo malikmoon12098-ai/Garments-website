@@ -122,14 +122,30 @@ function attachOrderListeners() {
                 const order = oSnap.data();
 
                 // 2. Update stock
-                const pRef = doc(db, "products", order.productId);
-                const pSnap = await getDoc(pRef);
-                if (pSnap.exists()) {
-                    const product = pSnap.data();
-                    const newStock = Math.max(0, (product.stock || 0) - (order.qty || 1));
-                    const updateData = { stock: newStock };
-                    if (newStock === 0) updateData.inStock = false;
-                    await updateDoc(pRef, updateData);
+                if (order.items && Array.isArray(order.items)) {
+                    // Multi-item Cart Order
+                    for (const item of order.items) {
+                        const pRef = doc(db, "products", item.id);
+                        const pSnap = await getDoc(pRef);
+                        if (pSnap.exists()) {
+                            const product = pSnap.data();
+                            const newStock = Math.max(0, (product.stock || 0) - (item.qty || 1));
+                            const updateData = { stock: newStock };
+                            if (newStock === 0) updateData.inStock = false;
+                            await updateDoc(pRef, updateData);
+                        }
+                    }
+                } else if (order.productId) {
+                    // Single Product Order
+                    const pRef = doc(db, "products", order.productId);
+                    const pSnap = await getDoc(pRef);
+                    if (pSnap.exists()) {
+                        const product = pSnap.data();
+                        const newStock = Math.max(0, (product.stock || 0) - (order.qty || 1));
+                        const updateData = { stock: newStock };
+                        if (newStock === 0) updateData.inStock = false;
+                        await updateDoc(pRef, updateData);
+                    }
                 }
 
                 // 3. Mark order as completed

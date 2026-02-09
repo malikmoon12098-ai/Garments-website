@@ -45,21 +45,24 @@
         input {
             width: 100%;
             padding: 15px;
-            background: rgba(0, 0, 0, 0.2);
+            background: rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
+            border-radius: 14px;
             color: white;
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             text-align: center;
-            letter-spacing: 12px;
+            letter-spacing: 15px;
+            /* Distinct dots */
             outline: none;
             box-sizing: border-box;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
+            transition: 0.3s;
         }
 
         input:focus {
             border-color: #7367f0;
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(0, 0, 0, 0.5);
+            box-shadow: 0 0 20px rgba(115, 103, 240, 0.2);
         }
 
         button {
@@ -82,13 +85,13 @@
 </head>
 
 <body>
+    <div class="lock-card">
+        <img src="images/logo.png" alt="Klader Logo" style="width: 80px; margin-bottom: 20px;">
+        <h2>Klader Admin</h2>
+        <p>Security Check</p>
 
-    <img src="images/logo.png" alt="Klader Logo" style="width: 80px; margin-bottom: 20px;">
-    <h2>Klader Admin</h2>
-    <p>Security Check</p>
-
-    <input type="password" id="adminPin" maxlength="4" placeholder="••••" autofocus>
-    <button id="loginBtn">Unlock Admin</button>
+        <input type="password" id="adminPin" maxlength="4" placeholder="••••" autofocus>
+        <button id="loginBtn">Unlock Admin</button>
     </div>
 
     <script>

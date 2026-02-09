@@ -105,6 +105,6 @@ export function openSocialApp(platform, webUrl, appUri, fallbackCallback) {
                 window.open(webUrl, '_blank');
             }
         }
-    }, 2000);
+    }, 1200);
 }
 
