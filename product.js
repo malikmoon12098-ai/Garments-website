@@ -1,6 +1,6 @@
 import { db } from './firebase-config.js';
 import { doc, getDoc, collection, addDoc, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { showToast, openSocialApp } from './ui-utils.js';
+import { showToast, openSocialApp, showConfirm } from './ui-utils.js';
 
 const params = new URLSearchParams(window.location.search);
 const productId = params.get('id');
@@ -205,6 +205,23 @@ if (closeSocialModal) {
     }
 }
 
+// Helper to save order
+async function saveOrder(orderData, confirmBtn) {
+    try {
+        await addDoc(collection(db, "orders"), orderData);
+        // Success UI
+        successProductName.textContent = currentProduct.name;
+        orderFormContainer.style.display = 'none';
+        orderSuccess.style.display = 'block';
+    } catch (err) {
+        console.error(err);
+        showToast("Order failed: " + err.message, "error");
+    } finally {
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = "Place Order Now";
+    }
+}
+
 // Form Submission
 if (directOrderForm) {
     directOrderForm.onsubmit = async (e) => {
@@ -246,16 +263,6 @@ if (directOrderForm) {
                 return;
             }
 
-            if (hasCompleted) {
-                const reorder = confirm("Aap ye product pehle order kar chuke hain. Kia aap dubara wahi order karna chahte hain?");
-                if (!reorder) {
-                    confirmBtn.disabled = false;
-                    confirmBtn.textContent = "Place Order Now";
-                    return;
-                }
-            }
-
-            // Save Order
             const orderData = {
                 customerName: name,
                 customerPhone: phone,
@@ -271,16 +278,21 @@ if (directOrderForm) {
                 summary: `${qty}x ${currentProduct.name} (Rs. ${currentProduct.price}/ea)`
             };
 
-            await addDoc(collection(db, "orders"), orderData);
+            if (hasCompleted) {
+                showConfirm("Re-order Confirmation", "You have previously ordered this product. Would you like to place this order again?", async () => {
+                    await saveOrder(orderData, confirmBtn);
+                });
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = "Place Order Now";
+                return;
+            }
 
-            // Success UI
-            successProductName.textContent = currentProduct.name;
-            orderFormContainer.style.display = 'none';
-            orderSuccess.style.display = 'block';
+            // Save Order Directly if no previous order
+            await saveOrder(orderData, confirmBtn);
 
         } catch (err) {
             console.error(err);
-            alert("Order failed: " + err.message);
+            showToast("Order failed: " + err.message, "error");
             confirmBtn.disabled = false;
             confirmBtn.textContent = "Place Order Now";
         }

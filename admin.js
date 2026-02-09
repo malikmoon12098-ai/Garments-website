@@ -159,10 +159,10 @@ function attachOrderListeners() {
     document.querySelectorAll('.delete-order-btn').forEach(btn => {
         btn.onclick = () => {
             const orderId = btn.dataset.id;
-            showConfirm("Kya aap waqai delete karna chahte hain?", "Ye order dashboard se hamesha ke liye khatam ho jaye ga.", async () => {
+            showConfirm("Delete this order?", "This order will be permanently removed from the dashboard.", async () => {
                 try {
                     await deleteDoc(doc(db, "orders", orderId));
-                    showToast("Order Delete Ho Gaya!", "success");
+                    showToast("Order Deleted Successfully!", "success");
                 } catch (e) {
                     showToast(e.message, "error");
                 }
@@ -389,7 +389,7 @@ function attachProductListeners() {
     });
     document.querySelectorAll('.delete-product').forEach(btn => {
         btn.onclick = () => {
-            showConfirm("Product Remove Karen?", "Ye item aapki shop se gayab ho jaye ga.", async () => {
+            showConfirm("Remove Product?", "This product will be permanently deleted from your shop.", async () => {
                 try {
                     await deleteDoc(doc(db, "products", btn.dataset.id));
                     loadProducts();
@@ -586,7 +586,7 @@ if (convertInquiryForm) {
         const address = document.getElementById('convCustAddress').value.trim();
 
         if (!name || !phone || !city || !address) {
-            showToast("Sari details likhen!", "error");
+            showToast("Please fill in all details!", "error");
             return;
         }
 
@@ -701,12 +701,16 @@ async function loadAlerts() {
                 div.className = 'admin-item';
                 div.style.borderLeft = '5px solid #ff4d4d';
                 div.innerHTML = `
-                    <div style="display: flex; gap: 15px; align-items: center;">
-                        <img src="${product.image}" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover;">
-                        <div>
-                            <h4 style="margin:0;">${escapeHTML(product.name)}</h4>
-                            <p style="margin:5px 0; color: #ff4d4d; font-weight: bold;">⚠️ Restock this product, it's about to finish!</p>
-                            <p style="margin:0; font-size: 0.85rem; color: #888;">Current Stock: ${stock} | Threshold: ${threshold}</p>
+                    <div style="display: flex; gap: 15px; align-items: flex-start;">
+                        <img src="${product.image}" style="width: 50px; height: 65px; border-radius: 8px; object-fit: cover; flex-shrink: 0;">
+                        <div style="flex: 1; min-width: 0;">
+                            <h4 style="margin:0; font-size: 1.1rem; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHTML(product.name)}</h4>
+                            <p style="margin:4px 0; color: #ffb8b8; font-size: 0.85rem; line-height: 1.2;">⚠️ Restock this product, it's about to finish!</p>
+                            <div style="display: flex; gap: 8px; font-size: 0.85rem; color: #888; margin-top: 5px;">
+                                <span style="white-space: nowrap;">Stock: <b style="color: #fff;">${stock}</b></span>
+                                <span>|</span>
+                                <span style="white-space: nowrap;">Threshold: <b style="color: #fff;">${threshold}</b></span>
+                            </div>
                         </div>
                     </div>
                 `;

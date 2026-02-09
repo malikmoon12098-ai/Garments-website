@@ -49,8 +49,8 @@ export function showConfirm(title, message, callback) {
             <h3>${title}</h3>
             <p>${message}</p>
             <div class="glass-modal-actions">
-                <button class="btn-cancel">Nahin</button>
-                <button class="btn-confirm">Haan, Bilkul</button>
+                <button class="btn-cancel">No</button>
+                <button class="btn-confirm">Yes, Confirmed</button>
             </div>
         </div>
     `;
